@@ -25,7 +25,7 @@ def setUpCamera(cameraPosition,cameraTarget,cameraUp):
 			  cameraTarget[0],cameraTarget[1],cameraTarget[2],
 			  cameraUp[0],cameraUp[1],cameraUp[2])
 
-def draw_target(x, y, z, width, height):
+def drawTarget(x, y, z, width, height):
 	glBegin(GL_QUADS)
 	glVertex3f(x, y, z)                               
 	glVertex3f(x+width, y, z)                      
@@ -40,7 +40,7 @@ def setUpSystem():
 	cameraUp = array([0.0,1.0,0.0])
 	setUpCamera(cameraPosition,cameraTarget,cameraUp)
 	glColor3f(0.0, 0.0, 1.0)
-	draw_target(0.0,0.0,0.0,200,100)
+	drawTarget(0.0,0.0,0.0,200,100)
 	glutSwapBuffers()
 	print "done setting up camera"
 
