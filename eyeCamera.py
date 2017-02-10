@@ -2,7 +2,6 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from numpy import *
-from sklearn.preprocessing import normalize
 
 # References:
 #         https://noobtuts.com/python/opengl-introduction
