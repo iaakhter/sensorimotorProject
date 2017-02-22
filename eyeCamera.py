@@ -21,7 +21,7 @@ def setUpCamera(cameraPosition,cameraTarget,cameraUp):
 	#eye position (0.0,0.0,3.0)
 	#reference point (0.0,0.0,0.0)
 	#up vector(0.0,1.0,0.0)
-	angle = time()%(math.pi)-math.pi/2.0
+	angle = time()%(180)-90
 
 	# to make sure that we can actually see the whole target
 	# at one point. Without this constraint, the transformation 
@@ -29,19 +29,25 @@ def setUpCamera(cameraPosition,cameraTarget,cameraUp):
 	# we are supposed to see it
 	if(angle >= -0.05 and angle <= 0.05):
 		angle = 0.0
-	#print "angle ", angle
+	#print "angle ", angle 
+	glPushMatrix()
 	glRotate(angle,0.0, 1.0, 0.0)
 	gluLookAt(cameraPosition[0],cameraPosition[1],cameraPosition[2],
 			  cameraTarget[0],cameraTarget[1],cameraTarget[2],
 			  cameraUp[0],cameraUp[1],cameraUp[2])
 
+	eyeCenterWidth = 0.26
+	eyeCenterHeight = 0.26
+	perceivedTarget(eyeCenterWidth,eyeCenterHeight)
+	glPopMatrix()
+
 def drawRectangle(x, y, z, width, height,color):
 	glColor3f(color[0],color[1],color[2])
-	glBegin(GL_QUADS)
+	glBegin(GL_POLYGON)
 	glVertex3f(x-width/2.0, y-height/2.0, z)                               
 	glVertex3f(x+width/2.0, y-height/2.0, z)                      
 	glVertex3f(x+width/2.0, y+height/2.0, z)            
-	glVertex3f(x-width/2.0, y+height/2.0, z)                 
+	glVertex3f(x-width/2.0, y+height/2.0, z)
 	glEnd()
 
 def drawTarget(x,y,z,width,height):
@@ -57,7 +63,7 @@ def drawMovingTarget(width,height):
 #Draw a square representing the focus of the eye (along the optical axis)
 def perceivedTarget(width, height):
 	color = (1.0,0.0,0.0)
-	drawRectangle(0,0,0.0,width,height,color)
+	drawRectangle(0,0,width,width,height,color)
 
 def determineDirection(targetWidth, targetHeight, eyeCenterWidth, eyeCenterHeight):
 	# Expected dimensions
@@ -102,18 +108,22 @@ def setUpSystem():
 	cameraPosition = array([0.0,0.0,1.0])
 	cameraTarget = array([0.0,0.0,0.0])
 	cameraUp = array([0.0,1.0,0.0])
+
+	radius = 1.0;
+	camX = sin(0.1) * radius;
+	camZ =  cos(0.1)* radius;
+	#cameraPosition[0] = -camX
+	#cameraPosition[2] = 1-camZ
+
 	setUpCamera(cameraPosition,cameraTarget,cameraUp)
 	
-	targetWidth = 0.5
+	targetWidth = 0.25
 	targetHeight = 0.25
 	glColor3f(0.0, 0.0, 1.0)
-	drawTarget(0.0,0.0,0.0,targetWidth,targetHeight)
+	drawTarget(0.0,0,0,targetWidth,targetHeight)
 	#Move the target horizontally
 	#drawMovingTarget(width,height)
-	eyeCenterWidth = 0.02
-	eyeCenterHeight = 0.02
-	perceivedTarget(eyeCenterWidth,eyeCenterHeight)
-	determineDirection(targetWidth,targetHeight,eyeCenterWidth,eyeCenterHeight)
+	#determineDirection(targetWidth,targetHeight,eyeCenterWidth,eyeCenterHeight)
 	glutSwapBuffers()
 	#print "done setting up camera"
 
