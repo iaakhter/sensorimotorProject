@@ -72,11 +72,13 @@ def QuaiaOptican(R,I,dt):
     
     return nrec, phirec
 
-#R = np.array([[math.pi/2], [math.pi/4], [0]])
-#I = np.array([[45],[45],[45]])
-#dt = 0.001
+R = np.array([[math.pi/2], [math.pi/2], [0]])
+I = np.array([[45],[45],[45]])
+dt = 0.001
 #
-#n, phi = QuaiaOptican(R,I,dt)
+n, phi = QuaiaOptican(R,I,dt)
+print "n: ", n
+print "phi: ", phi
 
 
 

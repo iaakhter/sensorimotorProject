@@ -46,9 +46,24 @@ class eyeCamera:
 		glVertex3f(x-width/2.0, y+height/2.0, z)
 		glEnd()
 
+	def drawLine(self,x1, y1, z1, x2, y2, z2,color):
+		glColor3f(color[0],color[1],color[2])
+		glBegin(GL_LINES)
+		glVertex3f(x1,y1,z1)
+		glVertex3f(x2,y2,z2)
+		glEnd()
+
 	def drawTarget(self,x,y,z,width,height):
 		color = (0.0,0.0,1.0)
 		self.drawRectangle(x,y,z,width,height,color)
+
+		# Draw the x,y and z axes
+		color = (1.0,0.0,0.0)
+		self.drawLine(0,0,0,0.5,0.0,0.0, color)
+		color = (0.0,1.0,0.0)
+		self.drawLine(0,0,0,0.0,0.5,0.0, color)
+		color = (0.0,0.0,1.0)
+		self.drawLine(0,0,0,0.0,0.0,0.5, color)
 
 	def drawMovingTarget(self,width,height):
 		startTime = time()%2.0
@@ -56,10 +71,19 @@ class eyeCamera:
 		self.drawTarget(xPosition,0.0,0.0,width,height)
 
 
-	#Draw a square representing the focus of the eye (along the optical axis)
+	# Draw a square representing the focus of the eye (along the optical axis)
 	def perceivedTarget(self,width, height):
 		color = (1.0,0.0,0.0)
-		self.drawRectangle(0,0,width,width,height,color)
+		self.drawRectangle(0,0,0,width,height,color)
+
+		# Draw the x,y and z axes
+		color = (1.0,0.0,0.0)
+		self.drawLine(0,0,0,0.5,0.0,0.0, color)
+		color = (0.0,1.0,0.0)
+		self.drawLine(0,0,0,0.0,0.5,0.0, color)
+		color = (0.0,0.0,1.0)
+		self.drawLine(0,0,0,0.0,0.0,0.5, color)
+		
 
 	def determineTargetOrientation(self,cameraPosition):
 		#Get the screen coordinates for blue and red objects
@@ -117,7 +141,7 @@ class eyeCamera:
 		
 		# just for the purposes of testing, moving angle
 		cameraRotAngle = time()%(180)-90
-		cameraRotAxis = array([0.0,1.0,0.0])
+		cameraRotAxis = array([1.0,0.0,0.0])
 
 		# to make sure that we can actually see the whole target
 		# at one point. Without this constraint, the transformation 
@@ -125,6 +149,9 @@ class eyeCamera:
 		if(cameraRotAngle >= -0.05 and cameraRotAngle <= 0.05):
 			cameraRotAngle = 0.0
 		# print "cameraRotationAngle ", cameraRotAngle
+
+		cameraRotAngle = 127
+		cameraRotAxis = array([7.07085373e-01, 7.07128178e-01, 1.21392305e-04])
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
 						perceivedTargetWidth,perceivedTargetHeight,
 						cameraRotAngle,cameraRotAxis)
