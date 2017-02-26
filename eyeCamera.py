@@ -4,7 +4,7 @@ from OpenGL.GLU import *
 from numpy import *
 from math import *
 from time import time
-from eyeModel import *
+from quaiaoptican import *
 
 # References:
 #         https://noobtuts.com/python/opengl-introduction
