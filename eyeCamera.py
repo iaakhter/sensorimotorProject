@@ -4,6 +4,7 @@ from OpenGL.GLU import *
 from numpy import *
 from math import *
 from time import time
+from eyeModel import *
 
 # References:
 #         https://noobtuts.com/python/opengl-introduction
@@ -15,6 +16,8 @@ class eyeCamera:
 	def __init__(self):
 		self.width, self.height = 500, 500
 		self.targetX, self.targetY, self.targetZ = 0, 0, 0
+		self.eyeInitOrient = array([[0], [0], [0]])
+		self.innervSignal = array([[30],[0],[0]])
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight,
@@ -127,6 +130,34 @@ class eyeCamera:
 			self.targetX += 0.1
 		elif(args[0] == 'a'):
 			self.targetX -= 0.1
+
+
+	# taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToEuler/
+	def convertAxisAngleToEuler(self,rotAxis, rotAngle):
+		s = sin(rotAngle)
+		c = cos(rotAngle)
+		t = 1-c
+		x,y,z = rotAxis[0], rotAxis[1], rotAxis[2]
+		#  if axis is not already normalised then uncomment this
+		# double magnitude = Math.sqrt(x*x + y*y + z*z);
+		# if (magnitude==0) throw error;
+		# x /= magnitude;
+		# y /= magnitude;
+		# z /= magnitude;
+		if ((x*y*t + z*s) > 0.998): # north pole singularity detected
+			heading = 2*atan2(x*sin(rotAngle/2),cos(rotAngle/2))
+			attitude = pi/2
+			bank = 0
+		elif ((x*y*t + z*s) < -0.998): # south pole singularity detected
+			heading = -2*atan2(x*sin(rotAngle/2),cos(rotAngle/2))
+			attitude = -PI/2
+			bank = 0
+		else:
+			heading = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
+			attitude = asin(x * y * t + z * s) ;
+			bank = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
+		# (myVersion = author's versoin : x = bank, roll, pitch; y = heading, yaw; z = attitude, pitch)
+		return [bank, heading, attitude]
 		
 
 
@@ -138,20 +169,18 @@ class eyeCamera:
 
 		perceivedTargetWidth = 0.30
 		perceivedTargetHeight = 0.30
-		
-		# just for the purposes of testing, moving angle
-		cameraRotAngle = time()%(180)-90
-		cameraRotAxis = array([1.0,0.0,0.0])
+	
 
-		# to make sure that we can actually see the whole target
-		# at one point. Without this constraint, the transformation 
-		# is too fast 
-		if(cameraRotAngle >= -0.05 and cameraRotAngle <= 0.05):
-			cameraRotAngle = 0.0
-		# print "cameraRotationAngle ", cameraRotAngle
+		cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
+		print "cameraRotAxis: ", cameraRotAxis
+		print "cameraRotAngle: ", cameraRotAngle 
+		eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis, cameraRotAngle)
+		print "eyeInitOrient: ", eyeInitOrient
+		#self.eyeModel.setInitialOrientation(self.eyeInitOrient)
 
-		cameraRotAngle = 127
-		cameraRotAxis = array([7.07085373e-01, 7.07128178e-01, 1.21392305e-04])
+		cameraRotAxis = array([0.0,0.0,1.0])
+		# convert angle from radians to degrees for opengl rotation
+		cameraRotAngle = cameraRotAngle*(180/pi)
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
 						perceivedTargetWidth,perceivedTargetHeight,
 						cameraRotAngle,cameraRotAxis)
@@ -159,11 +188,11 @@ class eyeCamera:
 		targetWidth = 0.25
 		targetHeight = 0.25
 		glColor3f(0.0, 0.0, 1.0)
-		#print "targetY: ", targetY
-		self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
-		targetOrientation = self.determineTargetOrientation(cameraPosition)
+		#self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
+		#print "targetOrientAxis: ", cameraRotAxis
+		#print "targetOrientAngle: ", cameraRotAngle
+
 		glutSwapBuffers()
-		#print "done setting up camera"
 
 	def main(self):
 		# initialization

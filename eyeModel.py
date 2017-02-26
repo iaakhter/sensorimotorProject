@@ -2,7 +2,17 @@ import numpy as np
 import math as math
 
 
+
+
+
+
+'''
+Python version of the model implemented 
+in https://sites.google.com/site/arkoene/QuaiaOptican.m?attredirects=0 by 
+Koene
+'''
 def QuaiaOptican(R,I,dt):
+    I = [I[2], I[1], I[0]]
 
     #system constants: %these parameters from Raphan 1998
     B = 7.47*10**(-5);	# plant viscosity
@@ -69,16 +79,17 @@ def QuaiaOptican(R,I,dt):
         R = phi*n
         Rrotvec=math.tan(phi/2)*n;
         t = t+1;
-    
+    nrec = [nrec[2], nrec[1], nrec[0]]
     return nrec, phirec
 
-R = np.array([[math.pi/2], [math.pi/2], [0]])
-I = np.array([[45],[45],[45]])
-dt = 0.001
-#
-n, phi = QuaiaOptican(R,I,dt)
-print "n: ", n
-print "phi: ", phi
+def main():
+    R = np.array([[0], [0], [0]])
+    I = np.array([[30],[0],[0]])
+    dt = 0.001
+    #
+    n, phi = QuaiaOptican(R,I,dt)
+    print "n: ", n
+    print "phi: ", phi
 
 
 
