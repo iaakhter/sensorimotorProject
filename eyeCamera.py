@@ -17,7 +17,9 @@ class eyeCamera:
 		self.width, self.height = 500, 500
 		self.targetX, self.targetY, self.targetZ = 0, 0, 0
 		self.eyeInitOrient = array([[0], [0], [0]])
-		self.innervSignal = array([[30],[0],[0]])
+		self.innervSignal = array([[0.00000001],[0],[0]])
+		self.cameraRotAxis = array([0,0,0])
+		self.cameraRotAngle = 0
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight,
@@ -109,16 +111,29 @@ class eyeCamera:
 
 	  	#Convert the screen coordinates to word coordinates
 	  	blueWorldC = gluUnProject(centerBluex,centerBluey,0.5,mvmatrix,projmatrix,viewport)
-		targetOrientationVector = blueWorldC - cameraPosition
+		targetVector = around(blueWorldC, decimals = 2) - cameraPosition
+		targetOrientationVector = targetVector - array([0,0,-1])
 		targetAngleX = math.acos(dot(targetOrientationVector,array([1,0,0]))/(linalg.norm(targetOrientationVector)*linalg.norm(array([1,0,0]))))
+		if isnan(targetAngleX):
+	 		targetAngleX = 0.000000001
 		targetAngleY = math.acos(dot(targetOrientationVector,array([0,1,0]))/(linalg.norm(targetOrientationVector)*linalg.norm(array([0,1,0]))))
+		if isnan(targetAngleY):
+	 		targetAngleY = 0.000000001
 		targetAngleZ = math.acos(dot(targetOrientationVector,array([0,0,1]))/(linalg.norm(targetOrientationVector)*linalg.norm(array([0,0,1]))))
+		if isnan(targetAngleZ):
+	 		targetAngleZ = 0.000000001
 		targetOrientations = array([targetAngleX, targetAngleY, targetAngleZ])
 		print "blue center screen: (",centerBluex,", ",centerBluey,")"
 		print "blue center world: ",blueWorldC
 		print "targetOrientationVector: ", targetOrientationVector
 		print "targetOrientations(in radians): ", targetOrientations
 		return targetOrientations
+
+	def determineRequiredInnerv(self, targetOrientation):
+		# because the model cannot handle a zero array for innervation signal
+		if(sum(targetOrientation) == 0):
+			targetOrientation[0] = 0.00000001
+		return array([[targetOrientation[0]],[targetOrientation[1]],[targetOrientation[2]]])
 
 
 	def keyPressed(self,*args):
@@ -156,41 +171,34 @@ class eyeCamera:
 			heading = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
 			attitude = asin(x * y * t + z * s) ;
 			bank = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
-		# (myVersion = author's versoin : x = bank, roll, pitch; y = heading, yaw; z = attitude, pitch)
-		return [bank, heading, attitude]
-		
+		# (myVersion = author's versoin : x = bank, roll; y = heading, yaw; z = attitude, pitch)
+		return array([[bank],[heading],[attitude]])
 
 
 	#callback function for opengl
-	def setUpSystem(self,):
+	def setUpSystem(self):
 		cameraPosition = array([0.0,0.0,1.0])
 		cameraTarget = array([0.0,0.0,0.0])
 		cameraUp = array([0.0,1.0,0.0])
 
 		perceivedTargetWidth = 0.30
 		perceivedTargetHeight = 0.30
-	
 
-		cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
-		print "cameraRotAxis: ", cameraRotAxis
-		print "cameraRotAngle: ", cameraRotAngle 
-		eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis, cameraRotAngle)
-		print "eyeInitOrient: ", eyeInitOrient
-		#self.eyeModel.setInitialOrientation(self.eyeInitOrient)
-
-		cameraRotAxis = array([0.0,0.0,1.0])
 		# convert angle from radians to degrees for opengl rotation
-		cameraRotAngle = cameraRotAngle*(180/pi)
+		self.cameraRotAngle = self.cameraRotAngle*(180/pi)
+		print "cameraRotAngle ", self.cameraRotAngle
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
 						perceivedTargetWidth,perceivedTargetHeight,
-						cameraRotAngle,cameraRotAxis)
+						self.cameraRotAngle,self.cameraRotAxis)
 		
 		targetWidth = 0.25
 		targetHeight = 0.25
-		glColor3f(0.0, 0.0, 1.0)
-		#self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
-		#print "targetOrientAxis: ", cameraRotAxis
-		#print "targetOrientAngle: ", cameraRotAngle
+		self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
+
+		targetOrientation = self.determineTargetOrientation(cameraPosition)
+		self.innervSignal = self.determineRequiredInnerv(targetOrientation)
+		self.cameraRotAxis, self.cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
+		self.eyeInitOrient = self.convertAxisAngleToEuler(self.cameraRotAxis, self.cameraRotAngle)
 
 		glutSwapBuffers()
 

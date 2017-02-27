@@ -33,7 +33,7 @@ def QuaiaOptican(R,I,dt):
 
     phi = np.linalg.norm(R)
     
-    print 'got here'
+    #print 'got here'
     
     tim = np.arange(0,T, dt)
     for value in tim: 
