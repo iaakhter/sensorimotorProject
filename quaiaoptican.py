@@ -13,6 +13,7 @@ Koene
 '''
 def QuaiaOptican(R,I,dt):
     I = [I[2], I[1], I[0]]
+    R[0], R[2] = R[2], R[0]
 
     #system constants: %these parameters from Raphan 1998
     B = 7.47*10**(-5);	# plant viscosity

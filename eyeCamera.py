@@ -18,12 +18,12 @@ class eyeCamera:
 		self.targetX, self.targetY, self.targetZ = 0, 0, 0
 		self.eyeInitOrient = array([[0], [0], [0]])
 		self.innervSignal = array([[0.00000001],[0],[0]])
-		self.cameraRotAxis = array([0,0,0])
-		self.cameraRotAngle = 0
+		self.cameraRotAxis = array([0.0,0.0,0.0])
+		self.cameraRotAngle = 0.0
+		self.targetChanged = False
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
-					perceivedTargetWidth,perceivedTargetHeight,
-					cameraRotAngle,cameraRotAxis):
+					perceivedTargetWidth,perceivedTargetHeight):
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
@@ -32,7 +32,7 @@ class eyeCamera:
 		
 		glPushMatrix()
 		# rotate the camera by the angle
-		glRotate(cameraRotAngle,cameraRotAxis[0], cameraRotAxis[1], cameraRotAxis[2])
+		glRotate(self.cameraRotAngle,self.cameraRotAxis[0], self.cameraRotAxis[1], self.cameraRotAxis[2])
 		gluLookAt(cameraPosition[0],cameraPosition[1],cameraPosition[2],
 				  cameraTarget[0],cameraTarget[1],cameraTarget[2],
 				  cameraUp[0],cameraUp[1],cameraUp[2])
@@ -112,43 +112,41 @@ class eyeCamera:
 	  	#Convert the screen coordinates to word coordinates
 	  	blueWorldC = gluUnProject(centerBluex,centerBluey,0.5,mvmatrix,projmatrix,viewport)
 		targetVector = around(blueWorldC, decimals = 2) - cameraPosition
-		targetOrientationVector = targetVector - array([0,0,-1])
-		targetAngleX = math.acos(dot(targetOrientationVector,array([1,0,0]))/(linalg.norm(targetOrientationVector)*linalg.norm(array([1,0,0]))))
-		if isnan(targetAngleX):
-	 		targetAngleX = 0.000000001
-		targetAngleY = math.acos(dot(targetOrientationVector,array([0,1,0]))/(linalg.norm(targetOrientationVector)*linalg.norm(array([0,1,0]))))
-		if isnan(targetAngleY):
-	 		targetAngleY = 0.000000001
-		targetAngleZ = math.acos(dot(targetOrientationVector,array([0,0,1]))/(linalg.norm(targetOrientationVector)*linalg.norm(array([0,0,1]))))
-		if isnan(targetAngleZ):
-	 		targetAngleZ = 0.000000001
-		targetOrientations = array([targetAngleX, targetAngleY, targetAngleZ])
-		print "blue center screen: (",centerBluex,", ",centerBluey,")"
-		print "blue center world: ",blueWorldC
-		print "targetOrientationVector: ", targetOrientationVector
-		print "targetOrientations(in radians): ", targetOrientations
+		# find the amount that the eye would need to rotate to look at the
+		# target assuming its initial orientation is [0,0,0]
+		targetOrientations = array([atan(targetVector[1]),atan(targetVector[0]),0.0])
 		return targetOrientations
 
 	def determineRequiredInnerv(self, targetOrientation):
+		print "targetOrient: ", targetOrientation
+		print "eyeInitOrient: ", self.eyeInitOrient
+		innervationSignal= array([targetOrientation[0] - self.eyeInitOrient[0],
+						   targetOrientation[1] - self.eyeInitOrient[1],
+						   targetOrientation[2] - self.eyeInitOrient[2]])
 		# because the model cannot handle a zero array for innervation signal
-		if(sum(targetOrientation) == 0):
-			targetOrientation[0] = 0.00000001
-		return array([[targetOrientation[0]],[targetOrientation[1]],[targetOrientation[2]]])
+		if(sum(innervationSignal) == 0):
+			diffOrientation[0] = 0.00000001
+		print "innervationSignal: ", innervationSignal
+		return innervationSignal
 
 
 	def keyPressed(self,*args):
 		if(args[0] == 'w'):
+			self.targetChanged = True
 			self.targetY += 0.1
 		elif(args[0] == 's'):
+			self.targetChanged = True
 			self.targetY -= 0.1
 		elif(args[0] == 'd'):
+			self.targetChanged = True
 			self.targetX += 0.1
 		elif(args[0] == 'a'):
+			self.targetChanged = True
 			self.targetX -= 0.1
 
 
 	# taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToEuler/
-	def convertAxisAngleToEuler(self,rotAxis, rotAngle):
+	def convertAxisAngleToEuler(self,rotAxis,rotAngle):
 		s = sin(rotAngle)
 		c = cos(rotAngle)
 		t = 1-c
@@ -184,22 +182,52 @@ class eyeCamera:
 		perceivedTargetWidth = 0.30
 		perceivedTargetHeight = 0.30
 
-		# convert angle from radians to degrees for opengl rotation
-		self.cameraRotAngle = self.cameraRotAngle*(180/pi)
-		print "cameraRotAngle ", self.cameraRotAngle
+		# print "rotation angle ", self.cameraRotAngle
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
-						perceivedTargetWidth,perceivedTargetHeight,
-						self.cameraRotAngle,self.cameraRotAxis)
+						perceivedTargetWidth,perceivedTargetHeight)
 		
 		targetWidth = 0.25
 		targetHeight = 0.25
 		self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
+		
+		# When the target has changed position, we need to rotate our eye accordingly
+		if(self.targetChanged):
+			# Get the orientation that the eye needs to be at to see the target
+			targetOrientation = self.determineTargetOrientation(cameraPosition)
+			
+			# Convert the target orientation to the required innervation signal
+			# This is what we need to learn (Righ now I just have a simple linear mapping
+			# from difference between target and initial orientation to the innervation
+			# signal)
+			self.innervSignal = self.determineRequiredInnerv(targetOrientation)
+			
+			# Get the target rotation axis and angle from the model
+			cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
+			
+			# update the eye's initial orientation for the next frame
+			self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
 
-		targetOrientation = self.determineTargetOrientation(cameraPosition)
-		self.innervSignal = self.determineRequiredInnerv(targetOrientation)
-		self.cameraRotAxis, self.cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
-		self.eyeInitOrient = self.convertAxisAngleToEuler(self.cameraRotAxis, self.cameraRotAngle)
+			# convert rotation angle from radians to degrees for opengl rotation
+			cameraRotAngle = cameraRotAngle*(180/pi)
+			
+			# add the rotation angle and axes to previous rotations. This is an opengl quirk
+			# that I don't know how to fix yet. For every new frame, it assumes that
+			# the camera is at its original unrotated orientation. So to take previous
+			# rotations into account we do a cumulative operation on the camera rotation
+			# angle and axis
+			self.cameraRotAngle += cameraRotAngle
+			self.cameraRotAxis = [self.cameraRotAxis[0] + cameraRotAxis[0],
+									self.cameraRotAxis[1] + cameraRotAxis[1],
+									self.cameraRotAxis[2] + cameraRotAxis[2]]
+			self.cameraRotAxis = self.cameraRotAxis/linalg.norm(self.cameraRotAxis)
 
+			# we are done dealing with the target 
+			self.targetChanged = False
+			print "cameraRotAngle:", cameraRotAngle
+			print "self.cameraRotAngle:", self.cameraRotAngle
+			print "self.cameraRotAxis:", self.cameraRotAxis
+			#print "innervationSignal: ", self.innervSignal
+			#print "correspoinding eyeOrientation: ", self.eyeInitOrient
 		glutSwapBuffers()
 
 	def main(self):
