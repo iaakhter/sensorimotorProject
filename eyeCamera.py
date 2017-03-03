@@ -107,14 +107,17 @@ class eyeCamera:
 		#Get the viewport, modelviewMatrix and the projectionMatrix
 		viewport = glGetIntegerv (GL_VIEWPORT);						# //get actual viewport
 	  	mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);				# //get actual model view matrix
-	  	projmatrix = glGetDoublev (GL_PROJECTION_MATRIX);			# //get actual projiection matrix
+	  	projmatrix = glGetDoublev (GL_PROJECTION_MATRIX);			# //get actual projection matrix
 
-	  	#Convert the screen coordinates to word coordinates
+	  	#Convert the screen coordinates to world coordinates
 	  	blueWorldC = gluUnProject(centerBluex,centerBluey,0.5,mvmatrix,projmatrix,viewport)
 		targetVector = around(blueWorldC, decimals = 2) - cameraPosition
 		# find the amount that the eye would need to rotate to look at the
 		# target assuming its initial orientation is [0,0,0]
-		targetOrientations = array([atan(targetVector[1]),atan(targetVector[0]),0.0])
+		targetVector_magnitude = linalg.norm(targetVector)
+		angleX = atan(targetVector[1]/sqrt(targetVector_magnitude**2 - targetVector[1]**2))
+		angleY = atan(targetVector[0]/targetVector[2])
+		targetOrientations = array([angleX, angleY, 0.0])
 		return targetOrientations
 
 	def determineRequiredInnerv(self, targetOrientation):
