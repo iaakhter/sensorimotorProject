@@ -64,11 +64,11 @@ class eyeCamera:
 
 		# Draw the x,y and z axes
 		color = (1.0,0.0,0.0)
-		self.drawLine(0,0,0,0.5,0.0,0.0, color)
+		self.drawLine(x,y,z,x+0.5,y,z, color)
 		color = (0.0,1.0,0.0)
-		self.drawLine(0,0,0,0.0,0.5,0.0, color)
+		self.drawLine(x,y,z,x,y+0.5,z, color)
 		color = (0.0,0.0,1.0)
-		self.drawLine(0,0,0,0.0,0.0,0.5, color)
+		self.drawLine(x,y,z,x,y,z+0.5, color)
 
 	def drawMovingTarget(self,width,height):
 		startTime = time()%2.0
