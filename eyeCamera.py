@@ -18,6 +18,8 @@ class eyeCamera:
 		self.targetX, self.targetY, self.targetZ = 0, 0, 0
 		self.eyeInitOrient = array([[0], [0], [0]])
 		self.innervSignal = array([[0.00000001],[0],[0]])
+		self.initCameraRotAxis = array([0.0,0.0,0.0])
+		self.initCameraRotAngle = 0.0
 		self.cameraRotAxis = array([0.0,0.0,0.0])
 		self.cameraRotAngle = 0.0
 		self.targetChanged = False
@@ -33,6 +35,9 @@ class eyeCamera:
 		glPushMatrix()
 		# rotate the camera by the angle
 		glRotate(self.cameraRotAngle,self.cameraRotAxis[0], self.cameraRotAxis[1], self.cameraRotAxis[2])
+		
+		# since opengl forgets previous rotations, first rotate the camera by previous rotation
+		glRotate(self.initCameraRotAngle,self.initCameraRotAxis[0], self.initCameraRotAxis[1], self.initCameraRotAxis[2])
 		gluLookAt(cameraPosition[0],cameraPosition[1],cameraPosition[2],
 				  cameraTarget[0],cameraTarget[1],cameraTarget[2],
 				  cameraUp[0],cameraUp[1],cameraUp[2])
@@ -123,9 +128,9 @@ class eyeCamera:
 	def determineRequiredInnerv(self, targetOrientation):
 		print "targetOrient: ", targetOrientation
 		print "eyeInitOrient: ", self.eyeInitOrient
-		innervationSignal= array([targetOrientation[0] - self.eyeInitOrient[0],
-						   targetOrientation[1] - self.eyeInitOrient[1],
-						   targetOrientation[2] - self.eyeInitOrient[2]])
+		innervationSignal= array([(targetOrientation[0] - self.eyeInitOrient[0])*1000,
+						   (targetOrientation[1] - self.eyeInitOrient[1])*1000,
+						   (targetOrientation[2] - self.eyeInitOrient[2])*1000])
 		# because the model cannot handle a zero array for innervation signal
 		if(sum(innervationSignal) == 0):
 			diffOrientation[0] = 0.00000001
@@ -188,6 +193,10 @@ class eyeCamera:
 		# print "rotation angle ", self.cameraRotAngle
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
 						perceivedTargetWidth,perceivedTargetHeight)
+
+		#update the initial camera rotation and angle to be the current ones
+		self.initCameraRotAxis = self.cameraRotAxis
+		self.initCameraRotAngle = self.cameraRotAngle
 		
 		targetWidth = 0.25
 		targetHeight = 0.25
@@ -212,25 +221,14 @@ class eyeCamera:
 
 			# convert rotation angle from radians to degrees for opengl rotation
 			cameraRotAngle = cameraRotAngle*(180/pi)
-			
-			# add the rotation angle and axes to previous rotations. This is an opengl quirk
-			# that I don't know how to fix yet. For every new frame, it assumes that
-			# the camera is at its original unrotated orientation. So to take previous
-			# rotations into account we do a cumulative operation on the camera rotation
-			# angle and axis
-			self.cameraRotAngle += cameraRotAngle
-			self.cameraRotAxis = [self.cameraRotAxis[0] + cameraRotAxis[0],
-									self.cameraRotAxis[1] + cameraRotAxis[1],
-									self.cameraRotAxis[2] + cameraRotAxis[2]]
-			cameraRotAxisMag = linalg.norm(self.cameraRotAxis)
-
-			#To avoid divide by 0 error
-			if cameraRotAxisMag > 0:
-				self.cameraRotAxis = self.cameraRotAxis/linalg.norm(cameraRotAxisMag)
+		
+			self.cameraRotAngle = cameraRotAngle
+			self.cameraRotAxis = cameraRotAxis
 
 			# we are done dealing with the target 
 			self.targetChanged = False
-			print "cameraRotAngle:", cameraRotAngle
+			print "self.initCameraRotAngle:", self.initCameraRotAngle
+			print "self.initCameraRotAxis:", self.initCameraRotAxis
 			print "self.cameraRotAngle:", self.cameraRotAngle
 			print "self.cameraRotAxis:", self.cameraRotAxis
 			#print "innervationSignal: ", self.innervSignal
