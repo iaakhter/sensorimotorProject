@@ -222,7 +222,11 @@ class eyeCamera:
 			self.cameraRotAxis = [self.cameraRotAxis[0] + cameraRotAxis[0],
 									self.cameraRotAxis[1] + cameraRotAxis[1],
 									self.cameraRotAxis[2] + cameraRotAxis[2]]
-			self.cameraRotAxis = self.cameraRotAxis/linalg.norm(self.cameraRotAxis)
+			cameraRotAxisMag = linalg.norm(self.cameraRotAxis)
+
+			#To avoid divide by 0 error
+			if cameraRotAxisMag > 0:
+				self.cameraRotAxis = self.cameraRotAxis/linalg.norm(cameraRotAxisMag)
 
 			# we are done dealing with the target 
 			self.targetChanged = False
