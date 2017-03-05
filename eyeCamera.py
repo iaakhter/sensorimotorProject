@@ -33,11 +33,13 @@ class eyeCamera:
 		glLoadIdentity()
 		
 		glPushMatrix()
+		glTranslate(0.0,0.0,1.0)
 		# rotate the camera by the angle
 		glRotate(self.cameraRotAngle,self.cameraRotAxis[0], self.cameraRotAxis[1], self.cameraRotAxis[2])
 		
 		# since opengl forgets previous rotations, first rotate the camera by previous rotation
 		glRotate(self.initCameraRotAngle,self.initCameraRotAxis[0], self.initCameraRotAxis[1], self.initCameraRotAxis[2])
+		glTranslate(0.0,0.0,-1.0)
 		gluLookAt(cameraPosition[0],cameraPosition[1],cameraPosition[2],
 				  cameraTarget[0],cameraTarget[1],cameraTarget[2],
 				  cameraUp[0],cameraUp[1],cameraUp[2])
@@ -45,6 +47,8 @@ class eyeCamera:
 		# let's look at the target that the camera perceives. This indicates
 		# the region that is in focus by the camera
 		self.perceivedTarget(perceivedTargetWidth,perceivedTargetHeight)
+		#color = (1.0,0.0,0.0)
+		#self.drawLine(0,0,1,0,0,0,color)
 		glPopMatrix()
 
 	def drawRectangle(self,x, y, z, width, height,color):
@@ -190,7 +194,6 @@ class eyeCamera:
 		perceivedTargetWidth = 0.30
 		perceivedTargetHeight = 0.30
 
-		# print "rotation angle ", self.cameraRotAngle
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
 						perceivedTargetWidth,perceivedTargetHeight)
 
