@@ -47,8 +47,6 @@ class eyeCamera:
 		# let's look at the target that the camera perceives. This indicates
 		# the region that is in focus by the camera
 		self.drawPositionOffocus(cameraPosition,perceivedTargetWidth,perceivedTargetHeight)
-		#color = (1.0,0.0,0.0)
-		#self.drawLine(0,0,1,0,0,0,color)
 		glPopMatrix()
 
 	def drawRectangle(self,x, y, z, width, height,color):
@@ -86,18 +84,6 @@ class eyeCamera:
 
 
 	# Draw a square representing the focus of the eye (along the optical axis)
-	def perceivedTarget(self,width, height):
-		color = (1.0,0.0,0.0)
-		self.drawRectangle(0,0,0,width,height,color)
-
-		# Draw the x,y and z axes
-		color = (1.0,0.0,0.0)
-		self.drawLine(0,0,0,0.5,0.0,0.0, color)
-		color = (0.0,1.0,0.0)
-		self.drawLine(0,0,0,0.0,0.5,0.0, color)
-		color = (0.0,0.0,1.0)
-		self.drawLine(0,0,0,0.0,0.0,0.5, color)
-
 	def drawPositionOffocus(self, cameraPosition,perceivedTargetWidth,perceivedTargetHeight):
 		mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);
 		invmvmatrix = linalg.inv(mvmatrix)
