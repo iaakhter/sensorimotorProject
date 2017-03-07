@@ -86,10 +86,13 @@ class eyeCamera:
 	# Draw a square representing the focus of the eye (along the optical axis)
 	def drawPositionOffocus(self, cameraPosition,perceivedTargetWidth,perceivedTargetHeight):
 		mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);
-		invmvmatrix = linalg.inv(mvmatrix)
 		visualAxis = array([mvmatrix[2][0], mvmatrix[2][1], mvmatrix[2][2]])
 		pointOffocus = cameraPosition - visualAxis
+		print "visualAxis: ", visualAxis
+		print "pointOffocus: ", pointOffocus
 		color = (1.0,0.0,0.0)
+		if(pointOffocus[2] < 0.0026):
+			pointOffocus[2] = 0.005
 		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],perceivedTargetWidth,perceivedTargetHeight,color)
 		
 
