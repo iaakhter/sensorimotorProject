@@ -11,7 +11,7 @@ from quaiaoptican import *
 #         https://learnopengl.com/#!Getting-started/Camera
 #         https://gist.github.com/strife25/803118
 
-class eyeCamera:
+class eyeCameraTrain:
 
 	def __init__(self):
 		self.width, self.height = 500, 500
@@ -22,7 +22,7 @@ class eyeCamera:
 		self.initCameraRotAngle = 0.0
 		self.cameraRotAxis = array([0.0,0.0,0.0])
 		self.cameraRotAngle = 0.0
-		self.targetChanged = False
+		self.setTrainingExample = False
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight):
@@ -31,23 +31,53 @@ class eyeCamera:
 		glLoadIdentity()
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
-		
+
+		#draw point of focus at initial orientation (without rotation)
 		glPushMatrix()
 		glTranslate(0.0,0.0,1.0)
-		# rotate the camera by the angle
-		glRotate(self.cameraRotAngle,self.cameraRotAxis[0], self.cameraRotAxis[1], self.cameraRotAxis[2])
-		
-		# since opengl forgets previous rotations, first rotate the camera by previous rotation
 		glRotate(self.initCameraRotAngle,self.initCameraRotAxis[0], self.initCameraRotAxis[1], self.initCameraRotAxis[2])
 		glTranslate(0.0,0.0,-1.0)
 		gluLookAt(cameraPosition[0],cameraPosition[1],cameraPosition[2],
 				  cameraTarget[0],cameraTarget[1],cameraTarget[2],
 				  cameraUp[0],cameraUp[1],cameraUp[2])
-
-		# let's look at the target that the camera perceives. This indicates
-		# the region that is in focus by the camera
 		self.drawPositionOffocus(cameraPosition,perceivedTargetWidth,perceivedTargetHeight)
 		glPopMatrix()
+
+		#draw target in position of focus if camera was rotated
+		glPushMatrix()
+		glTranslate(0.0,0.0,1.0)
+		glRotate(self.cameraRotAngle,self.cameraRotAxis[0], self.cameraRotAxis[1], self.cameraRotAxis[2])
+		glRotate(self.initCameraRotAngle,self.initCameraRotAxis[0], self.initCameraRotAxis[1], self.initCameraRotAxis[2])
+		glTranslate(0.0,0.0,-1.0)
+		gluLookAt(cameraPosition[0],cameraPosition[1],cameraPosition[2],
+				  cameraTarget[0],cameraTarget[1],cameraTarget[2],
+				  cameraUp[0],cameraUp[1],cameraUp[2])
+		self.drawTargetAtCameraFocus(cameraPosition,0.25,0.25)
+		glPopMatrix()
+
+	# Draw a square representing the focus of the eye (along the optical axis)
+	def drawPositionOffocus(self, cameraPosition,perceivedTargetWidth,perceivedTargetHeight):
+		mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);
+		visualAxis = array([mvmatrix[2][0], mvmatrix[2][1], mvmatrix[2][2]])
+		pointOffocus = cameraPosition - visualAxis
+		#print "visualAxis: ", visualAxis
+		#print "pointOffocus: ", pointOffocus
+		color = (1.0,0.0,0.0)
+		if(pointOffocus[2] < 0.003):
+			pointOffocus[2] = 0.005
+		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],perceivedTargetWidth,perceivedTargetHeight,color)
+
+
+	def drawTargetAtCameraFocus(self, cameraPosition,targetWidth,targetHeight):
+		mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);
+		visualAxis = array([mvmatrix[2][0], mvmatrix[2][1], mvmatrix[2][2]])
+		pointOffocus = cameraPosition - visualAxis
+		#print "visualAxis: ", visualAxis
+		#print "pointOffocus: ", pointOffocus
+		color = (0.0,0.0,1.0)
+		if(pointOffocus[2] < 0.003):
+			pointOffocus[2] = 0.005
+		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],targetWidth,targetHeight,color)
 
 	def drawRectangle(self,x, y, z, width, height,color):
 		glColor3f(color[0],color[1],color[2])
@@ -76,24 +106,6 @@ class eyeCamera:
 		self.drawLine(x,y,z,x,y+0.5,z, color)
 		color = (0.0,0.0,1.0)
 		self.drawLine(x,y,z,x,y,z+0.5, color)
-
-	def drawMovingTarget(self,width,height):
-		startTime = time()%2.0
-		xPosition = -1+startTime
-		self.drawTarget(xPosition,0.0,0.0,width,height)
-
-
-	# Draw a square representing the focus of the eye (along the optical axis)
-	def drawPositionOffocus(self, cameraPosition,perceivedTargetWidth,perceivedTargetHeight):
-		mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);
-		visualAxis = array([mvmatrix[2][0], mvmatrix[2][1], mvmatrix[2][2]])
-		pointOffocus = cameraPosition - visualAxis
-		print "visualAxis: ", visualAxis
-		print "pointOffocus: ", pointOffocus
-		color = (1.0,0.0,0.0)
-		if(pointOffocus[2] < 0.003):
-			pointOffocus[2] = 0.005
-		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],perceivedTargetWidth,perceivedTargetHeight,color)
 		
 
 	def determineTargetOrientation(self,cameraPosition):
@@ -126,32 +138,6 @@ class eyeCamera:
 		targetOrientations = array([angleX, angleY, 0.0])
 		return targetOrientations
 
-	def determineRequiredInnerv(self, targetOrientation):
-		print "targetOrient: ", targetOrientation
-		print "eyeInitOrient: ", self.eyeInitOrient
-		innervationSignal= array([(targetOrientation[0] - self.eyeInitOrient[0])*1000,
-						   (targetOrientation[1] - self.eyeInitOrient[1])*1000,
-						   (targetOrientation[2] - self.eyeInitOrient[2])*1000])
-		# because the model cannot handle a zero array for innervation signal
-		if(sum(innervationSignal) == 0):
-			diffOrientation[0] = 0.00000001
-		print "innervationSignal: ", innervationSignal
-		return innervationSignal
-
-
-	def keyPressed(self,*args):
-		if(args[0] == 'w'):
-			self.targetChanged = True
-			self.targetY += 0.1
-		elif(args[0] == 's'):
-			self.targetChanged = True
-			self.targetY -= 0.1
-		elif(args[0] == 'd'):
-			self.targetChanged = True
-			self.targetX += 0.1
-		elif(args[0] == 'a'):
-			self.targetChanged = True
-			self.targetX -= 0.1
 
 
 	# taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToEuler/
@@ -181,7 +167,6 @@ class eyeCamera:
 		# (myVersion = author's versoin : x = bank, roll; y = heading, yaw; z = attitude, pitch)
 		return array([[bank],[heading],[attitude]])
 
-	
 	# http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToAngle/
 	def convertEulerToAxisAngle(self, heading, attitude, bank):
 		# Assuming the angles are in radians.
@@ -206,6 +191,9 @@ class eyeCamera:
 			z /= (1.0*norm);
 		return [angle,x,y,z]
 
+	def keyPressed(self,*args):
+		if(args[0] == 't'):
+			self.setTrainingExample = True;
 
 	#callback function for opengl
 	def setUpSystem(self):
@@ -218,47 +206,44 @@ class eyeCamera:
 
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
 						perceivedTargetWidth,perceivedTargetHeight)
+		
+		if self.setTrainingExample:
+			#set up random innervation signals
+			innervateY = random.random()*120000 - 60000
+			self.innervSignal = array([[0.0],[innervateY],[0]])
+			print "innervateY: ", innervateY
+			
+			#set up random initial eye orientations
+			eyeInitOrientY = random.random()*0.349066 - 0.174533
+			self.eyeInitOrient = array([[0.0], [eyeInitOrientY], [0.0]])
+			print "eyeInitOrientY: ", eyeInitOrientY
+			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])
+			#print "[angle,x,y,z] ", angle,x,y,z
 
-		#update the initial camera rotation and angle to be the current ones
-		self.initCameraRotAxis = self.cameraRotAxis
-		self.initCameraRotAngle = self.cameraRotAngle
-		
-		targetWidth = 0.25
-		targetHeight = 0.25
-		self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
-		
-		# When the target has changed position, we need to rotate our eye accordingly
-		if(self.targetChanged):
-			# Get the orientation that the eye needs to be at to see the target
-			targetOrientation = self.determineTargetOrientation(cameraPosition)
-			
-			# Convert the target orientation to the required innervation signal
-			# This is what we need to learn (Righ now I just have a simple linear mapping
-			# from difference between target and initial orientation to the innervation
-			# signal)
-			self.innervSignal = self.determineRequiredInnerv(targetOrientation)
-			
+			#convert euler form of initial orientations to axis angle form
+			#this can be used to rotate cameras
+			self.initCameraRotAngle = angle*(180/pi)
+			self.initCameraRotAxis = array([x,y,z])
+			print "eyeInitOrientY in degrees: ", eyeInitOrientY*(180/pi)
+			print "self.initCameraRotAngle ", self.initCameraRotAngle
+			print "self.initCameraRotAxis ", self.initCameraRotAxis
+
 			# Get the target rotation axis and angle from the model
 			cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
 			
-			# update the eye's initial orientation for the next frame
-			self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
-
 			# convert rotation angle from radians to degrees for opengl rotation
 			cameraRotAngle = cameraRotAngle*(180/pi)
 		
 			self.cameraRotAngle = cameraRotAngle
 			self.cameraRotAxis = cameraRotAxis
 
-			# we are done dealing with the target 
-			self.targetChanged = False
-			print "self.initCameraRotAngle:", self.initCameraRotAngle
-			print "self.initCameraRotAxis:", self.initCameraRotAxis
-			print "self.cameraRotAngle:", self.cameraRotAngle
-			print "self.cameraRotAxis:", self.cameraRotAxis
-			#print "innervationSignal: ", self.innervSignal
-			#print "correspoinding eyeOrientation: ", self.eyeInitOrient
+			print "self.cameraRotAngle: ", self.cameraRotAngle
+			print "self.cameraRotAxis: ", self.cameraRotAxis
+
+			self.setTrainingExample = False
+
 		glutSwapBuffers()
+
 
 	def main(self):
 		# initialization
@@ -274,5 +259,5 @@ class eyeCamera:
 		glutKeyboardFunc(self.keyPressed)
 		glutMainLoop()                                         # start everything
 
-eyeCam = eyeCamera()
-eyeCam.main()
+eyeCamTrain = eyeCameraTrain()
+eyeCamTrain.main()
