@@ -239,8 +239,6 @@ class eyeCameraTrain:
 			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])
 			#print "[angle,x,y,z] ", angle,x,y,z
 
-			#convert euler form of initial orientations to axis angle form
-			#this can be used to rotate cameras
 			self.initCameraRotAngle = angle*(180/pi)
 			self.initCameraRotAxis = array([x,y,z])
 			#print "eyeInitOrientY in degrees: ", eyeInitOrientY*(180/pi)
