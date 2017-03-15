@@ -5,6 +5,7 @@ from numpy import *
 from math import *
 from time import time
 from quaiaoptican import *
+import cv2
 
 # References:
 #         https://noobtuts.com/python/opengl-introduction
@@ -23,6 +24,9 @@ class eyeCameraTrain:
 		self.cameraRotAxis = array([0.0,0.0,0.0])
 		self.cameraRotAngle = 0.0
 		self.setTrainingExample = False
+		self.saveExample = False
+		self.trainingExampleNumber = 0
+		self.f = open("trainingData/trainingLabel.txt",'w')
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight):
@@ -204,9 +208,19 @@ class eyeCameraTrain:
 		perceivedTargetWidth = 0.30
 		perceivedTargetHeight = 0.30
 
-		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
-						perceivedTargetWidth,perceivedTargetHeight)
-		
+		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,perceivedTargetWidth,perceivedTargetHeight)
+		if self.saveExample:
+			pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_BGR,type=GL_FLOAT)
+			pixels = pixels*255
+
+			imageName = "trainingData/trainingImages/image"
+			imageName = imageName + str(self.trainingExampleNumber)
+			imageName = imageName + ".png"
+			cv2.imwrite(imageName,pixels)
+			self.f.write(str(self.innervSignal[1][0])+"\n")
+			self.saveExample = False
+			self.trainingExampleNumber = self.trainingExampleNumber+1
+
 		if self.setTrainingExample:
 			#set up random innervation signals
 			innervateY = random.random()*120000 - 60000
@@ -239,8 +253,10 @@ class eyeCameraTrain:
 
 			print "self.cameraRotAngle: ", self.cameraRotAngle
 			print "self.cameraRotAxis: ", self.cameraRotAxis
-
 			self.setTrainingExample = False
+			self.saveExample = True
+
+
 
 		glutSwapBuffers()
 
@@ -258,6 +274,7 @@ class eyeCameraTrain:
 		glutIdleFunc(self.setUpSystem)                                     # draw all the time
 		glutKeyboardFunc(self.keyPressed)
 		glutMainLoop()                                         # start everything
+		self.f.close()
 
 eyeCamTrain = eyeCameraTrain()
 eyeCamTrain.main()
