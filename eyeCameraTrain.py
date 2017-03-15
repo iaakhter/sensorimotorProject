@@ -199,6 +199,9 @@ class eyeCameraTrain:
 		if(args[0] == 't'):
 			self.setTrainingExample = True;
 
+		elif(args[0] == 's'):
+			self.setTrainingExample = False;
+
 	#callback function for opengl
 	def setUpSystem(self):
 		cameraPosition = array([0.0,0.0,1.0])
@@ -210,6 +213,8 @@ class eyeCameraTrain:
 
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,perceivedTargetWidth,perceivedTargetHeight)
 		if self.saveExample:
+			print "SAVING EXAMPLE # ",self.trainingExampleNumber
+			print ""
 			pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_BGR,type=GL_FLOAT)
 			pixels = pixels*255
 
@@ -230,7 +235,7 @@ class eyeCameraTrain:
 			#set up random initial eye orientations
 			eyeInitOrientY = random.random()*0.349066 - 0.174533
 			self.eyeInitOrient = array([[0.0], [eyeInitOrientY], [0.0]])
-			print "eyeInitOrientY: ", eyeInitOrientY
+			#print "eyeInitOrientY: ", eyeInitOrientY
 			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])
 			#print "[angle,x,y,z] ", angle,x,y,z
 
@@ -238,7 +243,7 @@ class eyeCameraTrain:
 			#this can be used to rotate cameras
 			self.initCameraRotAngle = angle*(180/pi)
 			self.initCameraRotAxis = array([x,y,z])
-			print "eyeInitOrientY in degrees: ", eyeInitOrientY*(180/pi)
+			#print "eyeInitOrientY in degrees: ", eyeInitOrientY*(180/pi)
 			print "self.initCameraRotAngle ", self.initCameraRotAngle
 			print "self.initCameraRotAxis ", self.initCameraRotAxis
 
@@ -253,7 +258,7 @@ class eyeCameraTrain:
 
 			print "self.cameraRotAngle: ", self.cameraRotAngle
 			print "self.cameraRotAxis: ", self.cameraRotAxis
-			self.setTrainingExample = False
+			#self.setTrainingExample = False
 			self.saveExample = True
 
 
