@@ -15,9 +15,11 @@ def convertImageToArray (numberOfExamples, imagePath):
         imageName = imagePath + str(i) +'.png'
         img = cv2.imread(imageName)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = gray/255.0
         X[i] = np.reshape(gray, (1, n*d))
         
     return X
+
     
 def convertLabelToArray (numberOfExamples, labelPath):
     #Deal with labels
