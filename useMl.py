@@ -28,37 +28,57 @@ class useMlModel:
 		Get the best sigma using validation error
 	'''
 	def getBestSigma(self,X,y):
+		print "Finding best sigma "
 		 # get the number of rows(n) and columns(d)
 		(n,d) = X.shape
 
 		# Split training data into a training and a validation set
-		Xtrain = X[0:n//2]
-		ytrain = y[0:n//2]
-		Xvalid = X[n//2: n]
-		yvalid = y[n//2: n]
+		#Xtrain = X[0:n//2]
+		#ytrain = y[0:n//2]
+		#Xvalid = X[n//2: n]
+		#yvalid = y[n//2: n]
 
 		# Find best value of RBF kernel parameter,
 		# training on the train set and validating on the validation set
-
+		numFolds = 10
+		finalSigma = 0
 		minErr = np.inf
 		for s in range(0,16):
-			print "s, ", s
+			print "s ", s
 			sigma = 2 ** s
+			startFold = 0
+			sumErrors = 0
+			for nF in range(numFolds):
+				Xvalid = X[startFold: startFold+n//numFolds]
+				yvalid = y[startFold: startFold+n//numFolds]
 
-			model = linear_model.LeastSquaresRBF(sigma)
-			model.fit(Xtrain,ytrain)
+				Xtrain = X[0:startFold]
+				ytrain = y[0:startFold]
+				np.append(Xtrain,X[startFold+n//numFolds:n],axis=0)
+				np.append(ytrain,y[startFold+n//numFolds:n],axis=0)
 
-			# Compute the error on the validation set
-			yhat = model.predict(Xvalid)
-			validError = np.sum((yhat - yvalid)**2)/ (n//2)
+				startFold = startFold+n//numFolds
+			
 
+				# Train on the training set
+				model = linear_model.LeastSquaresRBF(sigma)
+				model.fit(Xtrain,ytrain)
+
+				# Compute the error on the validation set
+				yhat = model.predict(Xvalid)
+				validError = np.sum((yhat - yvalid)**2)/ (n//2)
+				sumErrors += validError
+				print("Error with sigma = {:e} = {}".format( sigma ,validError))
+
+			validError = sumErrors/numFolds
+			# Keep track of the lowest validation error
 			if validError < minErr:
 				minErr = validError
 				bestSigma = sigma
-
 		return bestSigma
 
 	def train(self):
+		print "Training"
 		xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, self.labelPath)
 		bestSigma = self.getBestSigma(xTrain,yTrain)
