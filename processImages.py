@@ -20,6 +20,22 @@ def convertImageToArray (numberOfExamples, imagePath):
         
     return X
 
+def constructXFromTargetFocusLocations(numberOfExamples, filePath):
+    #Get dimensions
+    trainingFeaturesFile = open(filePath, 'r')
+    
+    X = np.zeros((numberOfExamples,4))
+    
+    for i in range(numberOfExamples):
+        orientationList = trainingFeaturesFile.readline()
+        orientationList = orientationList.split(" ")
+        for j in range(4):
+            X[i,j] = float(orientationList[j])
+    
+    
+    trainingFeaturesFile.close()
+    return X
+
     
 def convertLabelToArray (numberOfExamples, labelPath):
     #Deal with labels
@@ -36,6 +52,9 @@ def convertLabelToArray (numberOfExamples, labelPath):
     return y
 
 
-#test run
-#X = convertImageToArray(234, 'trainingData/trainingImages/image')
-#y = convertLabelToArray(234, 'trainingData/trainingLabel.txt')
+if __name__ == "__main__":
+   #test run
+    #X = convertImageToArray(234, 'trainingData/trainingImages/image')
+    #y = convertLabelToArray(234, 'trainingData/trainingLabel.txt')
+    X = constructXFromTargetFocusLocations(1,"trainingData/trainingFeature.txt")
+    print X

@@ -27,6 +27,7 @@ class eyeCameraTrain:
 		self.saveExample = False
 		self.trainingExampleNumber = 0
 		self.f = open("trainingData/trainingLabel.txt",'w')
+		self.fFeatures = open("trainingData/trainingFeature.txt",'w')
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight):
@@ -112,35 +113,34 @@ class eyeCameraTrain:
 		self.drawLine(x,y,z,x,y,z+0.5, color)
 		
 
-	def determineTargetOrientation(self,cameraPosition):
+	def determineTargetCameraFocusPosition(self):
 		#Get the screen coordinates for blue and red objects
 		pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_RGB,type=GL_FLOAT)
 		#print "pixels"
-		startBluex, startBluey = 0, 0
-		endBluex, endBluey = 0, 0
 		indicesB = where(pixels[:,:,2]==1.0)
-		startBluey = min(indicesB[0])
-		endBluey = max(indicesB[0])
-		startBluex = min(indicesB[1])
-		endBluex = max(indicesB[1])
-		centerBluex = (startBluex + endBluex)/2.0
-		centerBluey = (startBluey + endBluey)/2.0
 
-		#Get the viewport, modelviewMatrix and the projectionMatrix
-		viewport = glGetIntegerv (GL_VIEWPORT);						# //get actual viewport
-		mvmatrix = glGetDoublev (GL_MODELVIEW_MATRIX);				# //get actual model view matrix
-		projmatrix = glGetDoublev (GL_PROJECTION_MATRIX);			# //get actual projection matrix
+		if len(indicesB[0]) > 0:
+			startBluey = min(indicesB[0])
+			endBluey = max(indicesB[0])
+			startBluex = min(indicesB[1])
+			endBluex = max(indicesB[1])
+			centerBluex = (startBluex + endBluex)/2.0
+			centerBluey = (startBluey + endBluey)/2.0
 
-		#Convert the screen coordinates to world coordinates
-		blueWorldC = gluUnProject(centerBluex,centerBluey,0.5,mvmatrix,projmatrix,viewport)
-		targetVector = around(blueWorldC, decimals = 2) - cameraPosition
-		# find the amount that the eye would need to rotate to look at the
-		# target assuming its initial orientation is [0,0,0]
-		targetVector_magnitude = linalg.norm(targetVector)
-		angleX = atan(targetVector[1]/sqrt(targetVector_magnitude**2 - targetVector[1]**2))
-		angleY = atan(targetVector[0]/targetVector[2])
-		targetOrientations = array([angleX, angleY, 0.0])
-		return targetOrientations
+		indicesR = where(pixels[:,:,0]==1.0)
+
+		if len(indicesR[0]) > 0:
+			startRedy = min(indicesR[0])
+			endRedy = max(indicesR[0])
+			startRedx = min(indicesR[1])
+			endRedx = max(indicesR[1])
+			centerRedx = (startRedx + endRedx)/2.0
+			centerRedy = (startRedy + endRedy)/2.0
+
+		if len(indicesB[0]) > 0 and len(indicesR[0]):
+			return [centerBluex, centerBluey, centerRedx, centerRedy]
+		else:
+			return []
 
 
 
@@ -213,6 +213,7 @@ class eyeCameraTrain:
 
 		self.setUpCamera(cameraPosition,cameraTarget,cameraUp,perceivedTargetWidth,perceivedTargetHeight)
 		if self.saveExample:
+			self.saveExample = False
 			print "SAVING EXAMPLE # ",self.trainingExampleNumber
 			print ""
 			pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_BGR,type=GL_FLOAT)
@@ -222,9 +223,16 @@ class eyeCameraTrain:
 			imageName = imageName + str(self.trainingExampleNumber)
 			imageName = imageName + ".png"
 			cv2.imwrite(imageName,pixels)
-			self.f.write(str(self.innervSignal[1][0])+"\n")
-			self.saveExample = False
-			self.trainingExampleNumber = self.trainingExampleNumber+1
+
+			featureVector = self.determineTargetCameraFocusPosition()
+
+			if len(featureVector) > 0:
+				print "featureVector ", featureVector
+				for loc in featureVector:
+					self.fFeatures.write(str(loc) + " ")
+				self.fFeatures.write("\n")
+				self.trainingExampleNumber = self.trainingExampleNumber+1
+				self.f.write(str(self.innervSignal[1][0])+"\n")
 
 		if self.setTrainingExample:
 			#set up random innervation signals
@@ -278,6 +286,7 @@ class eyeCameraTrain:
 		glutKeyboardFunc(self.keyPressed)
 		glutMainLoop()                                         # start everything
 		self.f.close()
+		self.fFeatures.close()
 
 eyeCamTrain = eyeCameraTrain()
 eyeCamTrain.main()

@@ -113,6 +113,39 @@ class eyeCamera:
 			self.targetX -= 0.1
 
 
+	def determineTargetCameraFocusPosition(self):
+		#Get the screen coordinates for blue and red objects
+		pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_RGB,type=GL_FLOAT)
+		#print "pixels"
+		indicesB = where(pixels[:,:,2]==1.0)
+
+		if len(indicesB[0]) > 0:
+			startBluey = min(indicesB[0])
+			endBluey = max(indicesB[0])
+			startBluex = min(indicesB[1])
+			endBluex = max(indicesB[1])
+			centerBluex = (startBluex + endBluex)/2.0
+			centerBluey = (startBluey + endBluey)/2.0
+
+		indicesR = where(pixels[:,:,0]==1.0)
+
+		if len(indicesR[0]) > 0:
+			startRedy = min(indicesR[0])
+			endRedy = max(indicesR[0])
+			startRedx = min(indicesR[1])
+			endRedx = max(indicesR[1])
+			centerRedx = (startRedx + endRedx)/2.0
+			centerRedy = (startRedy + endRedy)/2.0
+
+		#print "centerBluex ", centerBluey
+		#print "centerRedx ", centerRedx
+
+		if len(indicesB[0]) > 0 and len(indicesR[0]):
+			return [centerBluex, centerBluey, centerRedx, centerRedy]
+		else:
+			return []
+
+
 	# taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToEuler/
 	def convertAxisAngleToEuler(self,rotAxis,rotAngle):
 		s = sin(rotAngle)
@@ -188,45 +221,35 @@ class eyeCamera:
 		
 		if self.predictInnerv:
 			self.predictInnerv = False
-			pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_BGR,type=GL_FLOAT)
-			pixels = pixels*255.0
-			imageName = "testPredictionImage.png"
-			cv2.imwrite(imageName,pixels)
+			featureVector = self.determineTargetCameraFocusPosition()
 
-			pixelsGray = cv2.cvtColor(pixels, cv2.COLOR_BGR2GRAY)
-			
-			# Convert the current Pixel Array to the required innervation signal
-			# This is what we need to learn 
-			pixelsGray = np.reshape(pixelsGray,(1,pixelsGray.shape[0]*pixelsGray.shape[1]))
-			pixelsGray = pixelsGray/255.0
-			print "nonzero pixelsGray ", pixelsGray[pixelsGray!=0]
-			predictedInnervY= self.mlModel.predict(pixelsGray)
+			predictedInnervY= self.mlModel.predict(featureVector)
+
+			print "self.eyeInitOrient[1] ", self.eyeInitOrient[1]
 			print "predictedInnervY ", predictedInnervY
+			print "multiplied ", self.eyeInitOrient[1]*predictedInnervY
+
+			# only rotate if the boxes will remain in the window upon rotation
+			#if self.eyeInitOrient[1]*predictedInnervY >= -5000 and self.eyeInitOrient[1]*predictedInnervY <= 5000:
 			self.innervSignal = array([[0.00000001],[predictedInnervY],[0]])
 			
 			# Get the target rotation axis and angle from the model
 			cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
-			
+			print "cameraRotAxis ", cameraRotAxis
+			print "cameraRotAngle "
 			# update the eye's initial orientation for the next frame
 			self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
 
 			# convert rotation angle from radians to degrees for opengl rotation
 			cameraRotAngle = cameraRotAngle*(180/pi)
-		
+			
 			self.cameraRotAngle = cameraRotAngle
 			self.cameraRotAxis = cameraRotAxis
 
 			# we are done dealing with the target 
 			self.targetChanged = False
-			print "self.initCameraRotAngle:", self.initCameraRotAngle
-			print "self.initCameraRotAxis:", self.initCameraRotAxis
-			print "self.cameraRotAngle:", self.cameraRotAngle
-			print "self.cameraRotAxis:", self.cameraRotAxis
-			#print "innervationSignal: ", self.innervSignal
-			#print "correspoinding eyeOrientation: ", self.eyeInitOrient
 
-
-		# When the target has changed position, we need to rotate our eye accordingly
+	# When the target has changed position, we need to rotate our eye accordingly
 		if self.targetChanged:
 			self.predictInnerv = True
 			self.targetChanged = False

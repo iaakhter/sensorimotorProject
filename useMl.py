@@ -5,7 +5,7 @@ import cv2
 
 
 class useMlModel:
-	def __init__(self,imagePath ="trainingData/trainingImages/image" ,labelPath = "trainingData/trainingLabel.txt"):
+	def __init__(self,imagePath ="trainingData/trainingFeature.txt" ,labelPath = "trainingData/trainingLabel.txt"):
 		self.imagePath = imagePath
 		self.labelPath = labelPath
 		self.sigma = 1.0
@@ -25,7 +25,7 @@ class useMlModel:
 
 	'''
 		Code from Professor Mike Gelbart, UBC
-		Get the best sigma using validation error
+		Get the best sigma using cross validation
 	'''
 	def getBestSigma(self,X,y):
 		print "Finding best sigma "
@@ -79,14 +79,17 @@ class useMlModel:
 
 	def train(self):
 		print "Training"
-		xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
+		#xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
+		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, self.labelPath)
 		bestSigma = self.getBestSigma(xTrain,yTrain)
 		self.model = linear_model.LeastSquaresRBF(bestSigma)
 		self.model.fit(xTrain,yTrain)
 
 	def predict(self,testX):
-		yhat = self.model.predict(testX)
+		testFeature = np.zeros((1,4))
+		testFeature[0,:] = testX
+		yhat = self.model.predict(testFeature)
 		return yhat[0]
 
 	def testOnTrainingData(self):
