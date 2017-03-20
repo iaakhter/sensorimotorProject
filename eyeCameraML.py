@@ -236,14 +236,18 @@ class eyeCamera:
 			# Get the target rotation axis and angle from the model
 			cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
 			print "cameraRotAxis ", cameraRotAxis
-			print "cameraRotAngle "
+			print "cameraRotAngle ", cameraRotAngle*(180/pi)+self.initCameraRotAngle
+
+			if cameraRotAngle*(180/pi) + self.initCameraRotAngle < -12:
+				cameraRotAngle = -0.20944 - (self.initCameraRotAngle*pi)/180
+			if cameraRotAngle*(180/pi) + self.initCameraRotAngle > 12:
+				cameraRotAngle = 0.20944 - (self.initCameraRotAngle*pi)/180
 			# update the eye's initial orientation for the next frame
 			self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
 
 			# convert rotation angle from radians to degrees for opengl rotation
-			cameraRotAngle = cameraRotAngle*(180/pi)
 			
-			self.cameraRotAngle = cameraRotAngle
+			self.cameraRotAngle = cameraRotAngle*(180/pi)
 			self.cameraRotAxis = cameraRotAxis
 
 			# we are done dealing with the target 
