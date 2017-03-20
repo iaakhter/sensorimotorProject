@@ -91,7 +91,7 @@ class useMlModel:
 		yTrain = np.reshape(yTrain,(xTrain.shape[0]))
 		#self.model = linear_model.LinearRegression()
 		#self.model.fit(xTrain,yTrain)
-		self.model = MLPRegressor()
+		self.model = MLPRegressor(hidden_layer_sizes=(70,),alpha=0.01)
 		self.model.fit(xTrain,yTrain)
 
 
