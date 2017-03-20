@@ -241,7 +241,7 @@ class eyeCameraTrain:
 			print "innervateY: ", innervateY
 			
 			#set up random initial eye orientations
-			eyeInitOrientY = random.random()*0.349066 - 0.174533
+			eyeInitOrientY = random.random()*0.698132 - 0.349066
 			self.eyeInitOrient = array([[0.0], [eyeInitOrientY], [0.0]])
 			#print "eyeInitOrientY: ", eyeInitOrientY
 			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])

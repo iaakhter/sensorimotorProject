@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 
 
+
 class useMlModel:
 	def __init__(self,imagePath ="trainingData/trainingFeature.txt" ,labelPath = "trainingData/trainingLabel.txt"):
 		self.imagePath = imagePath
