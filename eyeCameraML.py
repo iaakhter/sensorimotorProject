@@ -141,7 +141,7 @@ class eyeCamera:
 		#print "centerRedx ", centerRedx
 
 		if len(indicesB[0]) > 0 and len(indicesR[0]):
-			return [centerBluex, centerBluey, centerRedx, centerRedy]
+			return [centerBluex, centerRedx]
 		else:
 			return []
 
@@ -239,8 +239,10 @@ class eyeCamera:
 			print "cameraRotAngle ", cameraRotAngle*(180/pi)+self.initCameraRotAngle
 
 			if cameraRotAngle*(180/pi) + self.initCameraRotAngle < -12:
+				print "stuck?"
 				cameraRotAngle = -0.20944 - (self.initCameraRotAngle*pi)/180
 			if cameraRotAngle*(180/pi) + self.initCameraRotAngle > 12:
+				print "stuck?"
 				cameraRotAngle = 0.20944 - (self.initCameraRotAngle*pi)/180
 			# update the eye's initial orientation for the next frame
 			self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)

@@ -24,12 +24,12 @@ def constructXFromTargetFocusLocations(numberOfExamples, filePath):
     #Get dimensions
     trainingFeaturesFile = open(filePath, 'r')
     
-    X = np.zeros((numberOfExamples,4))
+    X = np.zeros((numberOfExamples,2))
     
     for i in range(numberOfExamples):
         orientationList = trainingFeaturesFile.readline()
         orientationList = orientationList.split(" ")
-        for j in range(4):
+        for j in range(2):
             X[i,j] = float(orientationList[j])
     
     

@@ -138,7 +138,7 @@ class eyeCameraTrain:
 			centerRedy = (startRedy + endRedy)/2.0
 
 		if len(indicesB[0]) > 0 and len(indicesR[0]):
-			return [centerBluex, centerBluey, centerRedx, centerRedy]
+			return [centerBluex, centerRedx]
 		else:
 			return []
 

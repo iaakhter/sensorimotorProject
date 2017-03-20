@@ -1,8 +1,9 @@
-import linear_model
+#import linear_model
+from sklearn import linear_model
 import processImages
 import numpy as np
 import cv2
-
+from sklearn.svm import SVR
 
 
 class useMlModel:
@@ -83,12 +84,16 @@ class useMlModel:
 		#xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
 		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, self.labelPath)
-		bestSigma = self.getBestSigma(xTrain,yTrain)
-		self.model = linear_model.LeastSquaresRBF(bestSigma)
+		#bestSigma = self.getBestSigma(xTrain,yTrain)
+		#self.model = linear_model.LeastSquaresRBF(bestSigma)
+		#self.model.fit(xTrain,yTrain)
+		yTrain = np.reshape(yTrain,(xTrain.shape[0]))
+		self.model = linear_model.LinearRegression()
 		self.model.fit(xTrain,yTrain)
 
+
 	def predict(self,testX):
-		testFeature = np.zeros((1,4))
+		testFeature = np.zeros((1,2))
 		testFeature[0,:] = testX
 		yhat = self.model.predict(testFeature)
 		return yhat[0]
