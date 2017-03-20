@@ -1,9 +1,10 @@
 #import linear_model
-from sklearn import linear_model
 import processImages
 import numpy as np
 import cv2
+from sklearn import linear_model
 from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
 
 
 class useMlModel:
@@ -88,7 +89,9 @@ class useMlModel:
 		#self.model = linear_model.LeastSquaresRBF(bestSigma)
 		#self.model.fit(xTrain,yTrain)
 		yTrain = np.reshape(yTrain,(xTrain.shape[0]))
-		self.model = linear_model.LinearRegression()
+		#self.model = linear_model.LinearRegression()
+		#self.model.fit(xTrain,yTrain)
+		self.model = MLPRegressor()
 		self.model.fit(xTrain,yTrain)
 
 
