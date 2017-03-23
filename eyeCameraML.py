@@ -8,6 +8,7 @@ from quaiaoptican import *
 
 import cv2
 import useMl
+import useTensor
 
 # References:
 #         https://noobtuts.com/python/opengl-introduction
@@ -29,6 +30,8 @@ class eyeCamera:
 		self.predictInnerv = False
 		self.mlModel = useMl.useMlModel()
 		self.mlModel.train()
+		self.tensorModel = useTensor.useMlModel()
+		self.tensorModel.trainTensor()
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight):
@@ -223,10 +226,12 @@ class eyeCamera:
 			self.predictInnerv = False
 			featureVector = self.determineTargetCameraFocusPosition()
 
-			predictedInnervY= self.mlModel.predict(featureVector)
+			predictedInnervY = self.mlModel.predict(featureVector)
+			predictedInnervY2 = self.tensorModel.predictTensor(featureVector)
 
 			print "self.eyeInitOrient[1] ", self.eyeInitOrient[1]
 			print "predictedInnervY ", predictedInnervY
+			print "predicetedtensor ", predictedInnervY2
 			print "multiplied ", self.eyeInitOrient[1]*predictedInnervY
 
 			# only rotate if the boxes will remain in the window upon rotation

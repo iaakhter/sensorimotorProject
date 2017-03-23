@@ -45,7 +45,7 @@ def convertLabelToArray (numberOfExamples, labelPath):
     
     for i in range(numberOfExamples):
         currentLabel = float(trainingLabelsFile.readline())
-        y[i] = currentLabel
+        y[i] = float(currentLabel)
     
     
     trainingLabelsFile.close()

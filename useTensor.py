@@ -16,6 +16,16 @@ class useMlModel:
 		self.sigma = 1.0
 		#self.model = linear_model.LeastSquaresRBF(self.sigma)
 		self.numberOfExamples = self.getNumberOfTrainingExamples()
+		self.x = tf.placeholder(tf.float32, [None, 2], name="x")
+		self.W = tf.Variable(tf.zeros([2,1]), name="W")
+		self.b = tf.Variable(tf.zeros([1]), name="b")
+		with tf.name_scope("Wx_b") as scope:
+			self.product = tf.matmul(self.x,self.W)
+			self.y = self.product + self.b
+		self.muXtrain = 0
+		self.stdXtrain = 0
+		self.muYtrain = 0
+		self.stdYtrain =0 
 
 	def getNumberOfTrainingExamples(self):
 		f = open(self.labelPath, 'r')
@@ -87,7 +97,6 @@ class useMlModel:
 		#xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
 		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, self.labelPath)
-		print ("shape of xTrain: "), xTrain.shape
 		#bestSigma = self.getBestSigma(xTrain,yTrain)
 		#self.model = linear_model.LeastSquaresRBF(bestSigma)
 		#self.model.fit(xTrain,yTrain)
@@ -122,45 +131,62 @@ class useMlModel:
 		#trainingError = np.sum((yhat - ytrain[24])**2)
 		#print "trainingError", trainingError
 
+	def standardizeCols(self, M, *args):
+		stdM = np.zeros(M.shape, dtype =np.float32)
+		if (len(args) > 0):
+			mu =  args[0]
+			std_dev = args[1]
+		else:
+		#if mu and sigma are omitted, compute from M
+			mu = np.mean(M, axis=0)
+			std_dev = np.std(M, axis=0)
+
+		stdM = (M - mu) / std_dev
+
+		return stdM, mu, std_dev
+
+
+
 	def trainTensor(self):
 		#code from https://github.com/nethsix/gentle_tensorflow/blob/master/code/linear_regression_multi_feature_using_mini_batch_with_tensorboard.py
-		datapoint_size = 1000
-		batch_size = 1000
-		steps = 10000
-		learn_rate = 0.001
+		datapoint_size = self.numberOfExamples
+		batch_size = self.numberOfExamples
+		steps = 1000
+		learn_rate = 0.01
 		log_file = "/tmp/feature_2_batch_1000"
+		model_path = "tmp/model.ckpt"
 
 		#Model linear regression y = Wx + b
-		x = tf.placeholder(tf.float32, [None, 2], name="x")
-		W = tf.Variable(tf.zeros([2,1]), name="W")
-		b = tf.Variable(tf.zeros([1]), name="b")
-		with tf.name_scope("Wx_b") as scope:
-			product = tf.matmul(x,W)
-			y = product + b
+		# x = tf.placeholder(tf.float32, [None, 2], name="x")
+		# W = tf.Variable(tf.zeros([2,1]), name="W")
+		# b = tf.Variable(tf.zeros([1]), name="b")
+		# with tf.name_scope("Wx_b") as scope:
+		# 	product = tf.matmul(x,W)
+		# 	y = product + b
 
 		# Add summary ops to collect data
-		W_hist = tf.summary.histogram("weights", W)
-		b_hist = tf.summary.histogram("biases", b)
-		y_hist = tf.summary.histogram("y", y)	
+		W_hist = tf.summary.histogram("weights", self.W)
+		b_hist = tf.summary.histogram("biases", self.b)
+		y_hist = tf.summary.histogram("y", self.y)	
 
 		y_ = tf.placeholder(tf.float32, [None, 1])
 
 		# Cost function sum((y_-y)**2)
 		with tf.name_scope("cost") as scope:
-  			cost = tf.reduce_mean(tf.square(y_-y))
+  			cost = tf.reduce_mean(tf.square(y_-self.y))
   			cost_sum = tf.summary.scalar("cost", cost)
 
 		# Training using Gradient Descent to minimize cost
 		with tf.name_scope("train") as scope:
   			train_step = tf.train.GradientDescentOptimizer(learn_rate).minimize(cost)
 
-  		
   		xTrain = processImages.constructXFromTargetFocusLocations(datapoint_size, self.imagePath)
-  		xTrain = np.array(xTrain)
-
   		yTrain = processImages.convertLabelToArray(datapoint_size, self.labelPath)
-  		yTrain = np.reshape(yTrain,(xTrain.shape[0]))
 
+  		#Standardize features and target
+  		xTrain, self.muXtrain, self.stdXtrain = self.standardizeCols(xTrain)
+  		yTrain, self.muYtrain, self.stdYtrain= self.standardizeCols(yTrain)
+  
   		sess = tf.Session()
 
   		# Merge all the summaries and write them out to /tmp/mnist_logs
@@ -183,24 +209,42 @@ class useMlModel:
   			batch_ys = yTrain[batch_start_idx:batch_end_idx]
   			xs = np.array(batch_xs)
   			ys = np.array(batch_ys)
-  			all_feed = { x: xs, y_: ys }
+  			all_feed = { self.x: xs, y_: ys }
   			# Record summary data, and the accuracy every 10 steps
   			if i % 10 == 0:
   				# result = sess.run(merged, feed_dict=all_feed)
   				# writer.add_summary(result, i)
   				print("recording summary data removed")
   			else:
-  				feed = { x: xs, y_: ys }
+  				feed = { self.x: xs, y_: ys }
   				sess.run(train_step, feed_dict=feed)
-  			# print("After %d iteration:" % i)
-  			# print("W: %s" % sess.run(W))
-  			# print("b: %f" % sess.run(b))
-  			# print("cost: %f" % sess.run(cost, feed_dict=all_feed))
+  			print("After %d iteration:" % i)
+  			print("W: %s" % sess.run(self.W))
+  			print("b: %f" % sess.run(self.b))
+  			print("cost: %f" % sess.run(cost, feed_dict=all_feed))
+  		#Save model
+  		saver = tf.train.Saver()
+  		saver.save(sess, model_path)
 
+	def predictTensor(self, Xtest):
+
+		testFeature = np.zeros((1,2), dtype=np.float32)
+		testFeature[0,:] = Xtest
+		testFeature = self.standardizeCols(testFeature, self.muXtrain, self.stdXtrain)[0]
+		testFeature = np.array(testFeature, dtype=np.float32)
+		print "test feature: ", testFeature.dtype
+		sess = tf.Session()
+		init = tf.global_variables_initializer()
+		sess.run(init)
+		saver = tf.train.Saver()
+		load_path = saver.restore(sess, "tmp/model.ckpt")
+		yhat = sess.run(tf.matmul(testFeature, self.W) + self.b)
+		return yhat*self.stdYtrain + self.muYtrain
 
 if __name__ == "__main__":
 	modelTest = useMlModel()
 	modelTest.train()
 	modelTest.trainTensor()
+	# modelTest.predictTensor([108, 204])
 	# modelTest.testOnTrainingData()
 
