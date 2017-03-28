@@ -15,11 +15,15 @@ def bias_variable(shape):
 def conv2d(x, W):
   return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-
-x = tf.placeholder(tf.float32, shape=[None, 2])
+#To train using centers, use x shape = [none, 1, 2, 1]
+# x = tf.placeholder(tf.float32, shape=[None, 50, 50, 1])
+x = tf.placeholder(tf.float32, shape=[None, 1, 2, 1])
 y_ = tf.placeholder(tf.float32, shape=[None, OUT_SHAPE])
 
-x_image = tf.reshape(x, [-1,1,2,1])
+
+
+# x_image = tf.reshape(x, [-1,1,2,1])
+x_image = x
 
 #first convolutional layer
 W_conv1 = weight_variable([5, 5, 1 , 24])
@@ -93,3 +97,4 @@ W_fc5 = weight_variable([10, OUT_SHAPE])
 b_fc5 = bias_variable([OUT_SHAPE])
 
 y = tf.matmul(h_fc4_drop, W_fc5) + b_fc5
+
