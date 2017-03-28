@@ -38,7 +38,7 @@ class trainCNN:
         sess.run(tf.global_variables_initializer())
 
         # Training loop variables
-        epochs = 200
+        epochs = 300
         batch_size = 100
         num_samples = self.numOfExamples
         step_size = int(num_samples / batch_size)
@@ -58,7 +58,7 @@ class trainCNN:
 
                 train_step.run(feed_dict={model_example.x: batch[0], model_example.y_: batch[1], model_example.keep_prob: 0.8})
 
-                if i%10 == 0:
+                if i%100 == 0:
                   loss_value = loss.eval(feed_dict={model_example.x:batch[0], model_example.y_: batch[1], model_example.keep_prob: 1.0})
                   print("epoch: %d step: %d loss: %g"%(epoch, epoch * batch_size + i, loss_value))
 
