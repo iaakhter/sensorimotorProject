@@ -26,8 +26,8 @@ class eyeCameraTrain:
 		self.setTrainingExample = False
 		self.saveExample = False
 		self.trainingExampleNumber = 0
-		self.f = open("trainingData/trainingLabel.txt",'w')
-		self.fFeatures = open("trainingData/trainingFeature.txt",'w')
+		self.f = open("trainingData/trainingLabelXY.txt",'w')
+		self.fFeatures = open("trainingData/trainingFeatureXY.txt",'w')
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight):
@@ -136,9 +136,12 @@ class eyeCameraTrain:
 			endRedx = max(indicesR[1])
 			centerRedx = (startRedx + endRedx)/2.0
 			centerRedy = (startRedy + endRedy)/2.0
-
-		if len(indicesB[0]) > 0 and len(indicesR[0]):
-			return [centerBluex, centerRedx]
+		print "indicesB: ", indicesB
+		print "indicesR: ", indicesR
+		if len(indicesB[0]) > 0 and len(indicesR[0]) > 0:
+			# return [centerBluex, centerRedx]
+			# return [centerBluey, centerRedy]
+			return[centerBluex, centerBluey, centerRedx, centerRedy]
 		else:
 			return []
 
@@ -219,7 +222,7 @@ class eyeCameraTrain:
 			pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_BGR,type=GL_FLOAT)
 			pixels = pixels*255
 
-			imageName = "trainingData/trainingImages/image"
+			imageName = "trainingData/trainingImagesXY/image"
 			imageName = imageName + str(self.trainingExampleNumber)
 			imageName = imageName + ".png"
 			cv2.imwrite(imageName,pixels)
@@ -232,17 +235,22 @@ class eyeCameraTrain:
 					self.fFeatures.write(str(loc) + " ")
 				self.fFeatures.write("\n")
 				self.trainingExampleNumber = self.trainingExampleNumber+1
-				self.f.write(str(self.innervSignal[1][0])+"\n")
+				# self.f.write(str(self.innervSignal[1][0])+"\n")
+				self.f.write(str(self.innervSignal[0][0])+" "+str(self.innervSignal[1][0])+"\n")
 
 		if self.setTrainingExample:
 			#set up random innervation signals
 			innervateY = random.random()*120000 - 60000
-			self.innervSignal = array([[0.0],[innervateY],[0]])
+			# self.innervSignal = array([[0.0],[innervateY],[0]])
+			innervateX = random.random()*120000 - 60000
+			self.innervSignal = array([[innervateX],[innervateY],[0]])
+			print "innervateX: ", innervateX
 			print "innervateY: ", innervateY
-			
 			#set up random initial eye orientations
 			eyeInitOrientY = random.random()*0.698132 - 0.349066
-			self.eyeInitOrient = array([[0.0], [eyeInitOrientY], [0.0]])
+			# self.eyeInitOrient = array([[0.0], [eyeInitOrientY], [0.0]])
+			eyeInitOrientX = random.random()*0.698132 - 0.349066
+			self.eyeInitOrient = array([[eyeInitOrientX], [eyeInitOrientY], [0.0]])
 			#print "eyeInitOrientY: ", eyeInitOrientY
 			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])
 			#print "[angle,x,y,z] ", angle,x,y,z

@@ -132,7 +132,8 @@ class eyeCamera:
         if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
             print "click on (x,y): ", x, y
             self.targetChanged = True
-            self.targetX = (x / 250.0) -1
+            # self.targetX = (x / 250.0) -1
+            self.targetY = -(y / 250.0) + 1
 
     def determineTargetCameraFocusPosition(self):
         #Get the screen coordinates for blue and red objects
@@ -162,7 +163,8 @@ class eyeCamera:
         #print "centerRedx ", centerRedx
 
         if len(indicesB[0]) > 0 and len(indicesR[0]):
-            return [centerBluex, centerRedx]
+            # return [centerBluex, centerRedx]
+            return [centerBluey, centerRedy]
         else:
             return []
 
@@ -273,8 +275,13 @@ class eyeCamera:
 
             # only rotate if the boxes will remain in the window upon rotation
             #if self.eyeInitOrient[1]*predictedInnervY >= -5000 and self.eyeInitOrient[1]*predictedInnervY <= 5000:
+            # for x movements
             # self.innervSignal = array([[0.00000001],[predictedInnervY],[0]])
-            self.innervSignal = array([[0.00000001],[predictedYCNN],[0]])
+            # self.innervSignal = array([[0.00000001],[predictedYCNN],[0]])
+
+            # for y movements
+            # self.innervSignal = array([[predictedInnervY],[0.00000001],[0]])
+            self.innervSignal = array([[predictedYCNN],[0.00000001],[0]])
             
             # Get the target rotation axis and angle from the model
             cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
