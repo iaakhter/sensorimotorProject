@@ -49,7 +49,6 @@ def constructXFromTargetFocusLocations(numberOfExamples, ndimensions, filePath):
     for i in range(numberOfExamples):
         orientationList = trainingFeaturesFile.readline()
         orientationList = orientationList.split(" ")
-        print len(orientationList)
         for j in range(ndimensions):
             X[i,j] = float(orientationList[j])
     
@@ -58,15 +57,17 @@ def constructXFromTargetFocusLocations(numberOfExamples, ndimensions, filePath):
     return X
 
     
-def convertLabelToArray (numberOfExamples, labelPath):
+def convertLabelToArray (numberOfExamples, ndimensions, labelPath):
     #Deal with labels
     trainingLabelsFile = open(labelPath, 'r')
     
-    y = np.zeros((numberOfExamples,1))
+    y = np.zeros((numberOfExamples, ndimensions))
     
     for i in range(numberOfExamples):
-        currentLabel = float(trainingLabelsFile.readline())
-        y[i] = float(currentLabel)
+        currentLabelList = trainingLabelsFile.readline()
+        currentLabelList = currentLabelList.split(" ")
+        for j in range(ndimensions):
+            y[i,j] = float(currentLabelList[j])
     
     
     trainingLabelsFile.close()
@@ -98,8 +99,8 @@ def standardizeCols(M, *args):
 if __name__ == "__main__":
    #test run
     #X = convertImageToArray(234, 'trainingData/trainingImages/image')
-    # y = convertLabelToArray(500, 'trainingData/trainingLabel.txt')
-    X = constructXFromTargetFocusLocations(1,4,"trainingData/trainingFeatureXY.txt")
+    y = convertLabelToArray(1, 4, 'trainingData/trainingLabelXY.txt')
+    # X = constructXFromTargetFocusLocations(1,4,"trainingData/trainingFeatureXY.txt")
     # resizeImages (2135,"trainingData/trainingImages/image", "trainingData/resizedImages/image")
     # X = convertImageToArrayColor(1, "trainingData/resizedImages/image")
     # stdy, muTrain, sigmaTrain = standardizeCols(y)
