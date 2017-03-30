@@ -40,16 +40,17 @@ def convertImageToArrayColor (numberOfExamples, imagePath):
         
     return X
 
-def constructXFromTargetFocusLocations(numberOfExamples, filePath):
+def constructXFromTargetFocusLocations(numberOfExamples, ndimensions, filePath):
     #Get dimensions
     trainingFeaturesFile = open(filePath, 'r')
     
-    X = np.zeros((numberOfExamples,2))
+    X = np.zeros((numberOfExamples,ndimensions))
     
     for i in range(numberOfExamples):
         orientationList = trainingFeaturesFile.readline()
         orientationList = orientationList.split(" ")
-        for j in range(2):
+        print len(orientationList)
+        for j in range(ndimensions):
             X[i,j] = float(orientationList[j])
     
     
@@ -98,8 +99,8 @@ if __name__ == "__main__":
    #test run
     #X = convertImageToArray(234, 'trainingData/trainingImages/image')
     # y = convertLabelToArray(500, 'trainingData/trainingLabel.txt')
-    # X = constructXFromTargetFocusLocations(1,"trainingData/trainingFeature.txt")
-    resizeImages (2135,"trainingData/trainingImages/image", "trainingData/resizedImages/image")
+    X = constructXFromTargetFocusLocations(1,4,"trainingData/trainingFeatureXY.txt")
+    # resizeImages (2135,"trainingData/trainingImages/image", "trainingData/resizedImages/image")
     # X = convertImageToArrayColor(1, "trainingData/resizedImages/image")
     # stdy, muTrain, sigmaTrain = standardizeCols(y)
     # print stdy, muTrain, sigmaTrain
