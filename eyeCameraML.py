@@ -32,7 +32,7 @@ class eyeCamera:
         self.targetChanged = False
         self.predictInnerv = False
         self.mlModel = useMl.useMlModel()
-        self.mlModel.train()
+        # self.mlModel.train()
         # self.tensorModel = useTensor.useMlModel()
         # self.tensorModel.trainTensor()
         tensorModel = train_example.trainCNN()
@@ -132,7 +132,7 @@ class eyeCamera:
         if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
             print "click on (x,y): ", x, y
             self.targetChanged = True
-            # self.targetX = (x / 250.0) -1
+            self.targetX = (x / 250.0) - 1
             self.targetY = -(y / 250.0) + 1
 
     def determineTargetCameraFocusPosition(self):
@@ -164,7 +164,7 @@ class eyeCamera:
 
         if len(indicesB[0]) > 0 and len(indicesR[0]):
             # return [centerBluex, centerRedx]
-            return [centerBluey, centerRedy]
+            return [centerBluex, centerBluey, centerRedx, centerRedy]
         else:
             return []
 
@@ -256,22 +256,18 @@ class eyeCamera:
             self.predictInnerv = False
             featureVector = self.determineTargetCameraFocusPosition()
 
-            predictedInnervY = self.mlModel.predict(featureVector)
-            testFeature = np.zeros((1,2), dtype=np.float32)
-            testFeature[0,:] = featureVector
+            # predictedInnervY = self.mlModel.predict(featureVector)
+
             # xTest = self.getTestExample() 
-            xTest = np.reshape(featureVector, (1,1,2,1))
+            # xTest = np.reshape(featureVector, (1,1,2,1))
+            xTest = np.reshape(featureVector, (1,1,4,1))
             test_prediction = model_example.y.eval(session=self.sess, feed_dict={model_example.x: xTest, model_example.keep_prob: 1.0})
-            print "test prediction", test_prediction
-            # predictedInnervY2 = self.tensorModel.predictTensor(featureVector)
 
-            print "self.eyeInitOrient[1] ", self.eyeInitOrient[1]
-            print "predictedInnervY ", predictedInnervY
+            # print "predicted sklearn ", predictedInnervY
 
-            print "multiplied ", self.eyeInitOrient[1]*predictedInnervY
+            predictedCNN = test_prediction*self.traningStd + self.traningMean
 
-            predictedYCNN = test_prediction[0,0]*self.traningStd + self.traningMean
-            print "predicted y tensor: ", predictedYCNN
+            print "predicted tensor: ", predictedCNN
 
             # only rotate if the boxes will remain in the window upon rotation
             #if self.eyeInitOrient[1]*predictedInnervY >= -5000 and self.eyeInitOrient[1]*predictedInnervY <= 5000:
@@ -279,9 +275,7 @@ class eyeCamera:
             # self.innervSignal = array([[0.00000001],[predictedInnervY],[0]])
             # self.innervSignal = array([[0.00000001],[predictedYCNN],[0]])
 
-            # for y movements
-            # self.innervSignal = array([[predictedInnervY],[0.00000001],[0]])
-            self.innervSignal = array([[predictedYCNN],[0.00000001],[0]])
+            self.innervSignal = array([[predictedCNN[0,0]],[predictedCNN[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
             cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
