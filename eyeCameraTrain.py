@@ -136,8 +136,6 @@ class eyeCameraTrain:
 			endRedx = max(indicesR[1])
 			centerRedx = (startRedx + endRedx)/2.0
 			centerRedy = (startRedy + endRedy)/2.0
-		print "indicesB: ", indicesB
-		print "indicesR: ", indicesR
 		if len(indicesB[0]) > 0 and len(indicesR[0]) > 0:
 			# return [centerBluex, centerRedx]
 			# return [centerBluey, centerRedy]

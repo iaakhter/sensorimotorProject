@@ -6,21 +6,30 @@ import numpy as np
 class trainCNN:
     def __init__(self):
         # Load Training Data
-        imagePath ="trainingData/trainingFeature.txt"
-        labelPath = "trainingData/trainingLabel.txt"
-        self.numOfExamples = 2000
+        # imagePath ="trainingData/trainingFeature.txt"
+        # labelPath = "trainingData/trainingLabel.txt"
+        #Train XY
+        imagePath ="trainingData/trainingFeatureXY.txt"
+        labelPath = "trainingData/trainingLabelXY.txt"
+        self.numOfExamples = 5000
+        numOfFeatures = 4
+        numOfLabels = 2
 
         traningImagesPath = "trainingData/resizedImages/image"
 
         #To train using centers, uncomment next two lines
-        xTrain = processImages.constructXFromTargetFocusLocations(self.numOfExamples, imagePath)
-        self.xTrain = np.reshape(xTrain, (self.numOfExamples, 1, 2, 1))
+        # xTrain = processImages.constructXFromTargetFocusLocations(self.numOfExamples, 2, imagePath)
+        # self.xTrain = np.reshape(xTrain, (self.numOfExamples, 1, 2, 1))
+
+        #To train using XY uncomment next two lines
+        xTrain = processImages.constructXFromTargetFocusLocations(self.numOfExamples, numOfFeatures, imagePath)
+        self.xTrain = np.reshape(xTrain, (self.numOfExamples, 1, 4, 1))
 
         #To train using the 50x50 image in grey, uncomment the next two lines
         # xTrain = processImages.convertImageToArray(self.numOfExamples, traningImagesPath)
         # self.xTrain = np.reshape(xTrain, (self.numOfExamples, 50, 50, 1))
 
-        yTrain = processImages.convertLabelToArray(self.numOfExamples, labelPath)
+        yTrain = processImages.convertLabelToArray(self.numOfExamples, numOfLabels, labelPath)
         self.yTrain, self.muYTrain, self.stdYTrain = processImages.standardizeCols(yTrain)
 
     def train(self):
@@ -38,7 +47,7 @@ class trainCNN:
         sess.run(tf.global_variables_initializer())
 
         # Training loop variables
-        epochs = 300
+        epochs = 400
         batch_size = 100
         num_samples = self.numOfExamples
         step_size = int(num_samples / batch_size)

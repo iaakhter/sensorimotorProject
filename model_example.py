@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-OUT_SHAPE = 1
+OUT_SHAPE = 2
 
 def weight_variable(shape):
   initial = tf.truncated_normal(shape, stddev=0.1)
@@ -17,7 +17,7 @@ def conv2d(x, W):
 
 #To train using centers, use x shape = [none, 1, 2, 1]
 # x = tf.placeholder(tf.float32, shape=[None, 50, 50, 1])
-x = tf.placeholder(tf.float32, shape=[None, 1, 2, 1])
+x = tf.placeholder(tf.float32, shape=[None, 1, 4, 1])
 y_ = tf.placeholder(tf.float32, shape=[None, OUT_SHAPE])
 
 
