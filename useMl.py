@@ -8,7 +8,7 @@ from sklearn.neural_network import MLPRegressor
 
 
 class useMlModel:
-	def __init__(self,imagePath ="trainingData/trainingFeature.txt" ,labelPath = "trainingData/trainingLabel.txt"):
+	def __init__(self,imagePath ="trainingData/trainingFeatureXY.txt" ,labelPath = "trainingData/trainingLabelXY.txt"):
 		self.imagePath = imagePath
 		self.labelPath = labelPath
 		self.sigma = 1.0
@@ -83,12 +83,12 @@ class useMlModel:
 	def train(self):
 		print "Training"
 		#xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
-		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, self.imagePath)
-		yTrain = processImages.convertLabelToArray(self.numberOfExamples, self.labelPath)
+		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, 4,self.imagePath)
+		yTrain = processImages.convertLabelToArray(self.numberOfExamples, 2,self.labelPath)
 		#bestSigma = self.getBestSigma(xTrain,yTrain)
 		#self.model = linear_model.LeastSquaresRBF(bestSigma)
 		#self.model.fit(xTrain,yTrain)
-		yTrain = np.reshape(yTrain,(xTrain.shape[0]))
+		yTrain = np.reshape(yTrain,(xTrain.shape[0],2))
 		#self.model = linear_model.LinearRegression()
 		#self.model.fit(xTrain,yTrain)
 		self.model = MLPRegressor(hidden_layer_sizes=(70,),alpha=0.01)
@@ -96,9 +96,9 @@ class useMlModel:
 
 
 	def predict(self,testX):
-		testFeature = np.zeros((1,2))
-		testFeature[0,:] = testX
-		yhat = self.model.predict(testFeature)
+		#testFeature = np.zeros((1,4))
+		#testFeature[0,:] = testX
+		yhat = self.model.predict(testX)
 		return yhat[0]
 
 	def testOnTrainingData(self):
