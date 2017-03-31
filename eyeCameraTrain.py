@@ -70,6 +70,7 @@ class eyeCameraTrain:
 		color = (1.0,0.0,0.0)
 		if(pointOffocus[2] < 0.003):
 			pointOffocus[2] = 0.005
+		pointOffocus = [0.0,0.0,0.0]
 		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],perceivedTargetWidth,perceivedTargetHeight,color)
 
 
@@ -82,6 +83,7 @@ class eyeCameraTrain:
 		color = (0.0,0.0,1.0)
 		if(pointOffocus[2] < 0.003):
 			pointOffocus[2] = 0.005
+		pointOffocus = [0.0,0.0,0.0]
 		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],targetWidth,targetHeight,color)
 
 	def drawRectangle(self,x, y, z, width, height,color):

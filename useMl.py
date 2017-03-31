@@ -91,14 +91,14 @@ class useMlModel:
 		yTrain = np.reshape(yTrain,(xTrain.shape[0],2))
 		#self.model = linear_model.LinearRegression()
 		#self.model.fit(xTrain,yTrain)
-		self.model = MLPRegressor(hidden_layer_sizes=(70,),alpha=0.01)
+		self.model = MLPRegressor(hidden_layer_sizes=(70,),alpha=1.0)
 		self.model.fit(xTrain,yTrain)
 
 
 	def predict(self,testX):
-		#testFeature = np.zeros((1,4))
-		#testFeature[0,:] = testX
-		yhat = self.model.predict(testX)
+		testFeature = np.zeros((1,4))
+		testFeature[0,:] = testX
+		yhat = self.model.predict(testFeature)
 		return yhat[0]
 
 	def testOnTrainingData(self):
