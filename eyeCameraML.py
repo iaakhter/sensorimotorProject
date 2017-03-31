@@ -31,6 +31,7 @@ class eyeCamera:
         self.cameraRotAngle = 0.0
         self.targetChanged = False
         self.predictInnerv = False
+        self.donePrediction = False
         self.mlModel = useMl.useMlModel()
         self.mlModel.train()
         # self.tensorModel = useTensor.useMlModel()
@@ -162,7 +163,7 @@ class eyeCamera:
         #print "centerBluex ", centerBluey
         #print "centerRedx ", centerRedx
 
-        if len(indicesB[0]) > 0 and len(indicesR[0]):
+        if len(indicesB[0]) > 0 and len(indicesR[0]) >0:
             # return [centerBluex, centerRedx]
             return [centerBluex, centerBluey, centerRedx, centerRedy]
         else:
@@ -241,6 +242,16 @@ class eyeCamera:
         perceivedTargetWidth = 0.30
         perceivedTargetHeight = 0.30
 
+        if self.donePrediction:
+            self.donePrediction = True
+             featureVector = self.determineTargetCameraFocusPosition()
+             if len(featureVector) == 0:
+                self.initCameraRotAxis = array([0.0,0.0,0.0])
+                self.initCameraRotAngle = 0.0
+                self.cameraRotAxis = array([0.0,0.0,0.0])
+                self.cameraRotAngle = 0.0
+
+
         self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
                         perceivedTargetWidth,perceivedTargetHeight)
 
@@ -254,6 +265,7 @@ class eyeCamera:
         
         if self.predictInnerv:
             self.predictInnerv = False
+            self.donePrediction = True
             featureVector = self.determineTargetCameraFocusPosition()
 
             predictedInnervXY = self.mlModel.predict(featureVector)
@@ -275,48 +287,11 @@ class eyeCamera:
             self.innervSignal = array([[predictedInnervXY[0]],[predictedInnervXY[1]],[0]])
             # self.innervSignal = array([[0.00000001],[predictedYCNN],[0]])
 
-            #self.innervSignal = array([[predictedCNN[0,0]],[predictedCNN[0,1]],[0]])
+            self.innervSignal = array([[predictedCNN[0,0]],[predictedCNN[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
             cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
-            totalCameraRotAxis = [cameraRotAxis[0] + self.initCameraRotAxis[0],
-                                    cameraRotAxis[1] + self.initCameraRotAxis[1],
-                                    cameraRotAxis[2] + self.initCameraRotAxis[2]]
-            print "initialCameraRotAxis ", self.initCameraRotAxis
-            print "cameraRotAxis ", cameraRotAxis
-            print "initialCameraRotAngle ", self.initCameraRotAngle
-            print "cameraRotationAngle ", cameraRotAngle*(180/pi)
-            print "totalCameraRotAngle ", cameraRotAngle*(180/pi)+self.initCameraRotAngle
-            print "totalCameraRotAxis ", totalCameraRotAxis
-
-            '''cameraRotEuler = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
-            initCameraRotEuler = self.convertAxisAngleToEuler(self.initCameraRotAxis,self.initCameraRotAngle)
-            totalCameraRotEuler = initCameraRotEuler + cameraRotEuler
-            print "initCameraRotEuler ", initCameraRotEuler
-            print "cameraRotEuler ", cameraRotEuler
-            print "two added together ", totalCameraRotEuler
-            newCameraRotOrientation = np.zeros((3,1))
-
-
-            angleThreshold = 0.191986
-            if totalCameraRotEuler[0] < -angleThreshold or totalCameraRotEuler[0] > angleThreshold or totalCameraRotEuler[1] < -angleThreshold or totalCameraRotEuler[1] > angleThreshold:
-                print "stuck? "
-                if totalCameraRotEuler[0] < -angleThreshold:
-                    newCameraRotOrientation[0] = -angleThreshold - initCameraRotEuler[0]
-                if totalCameraRotEuler[0] > angleThreshold:
-                    newCameraRotOrientation[0] = angleThreshold - initCameraRotEuler[0]
-                if totalCameraRotEuler[1] < -angleThreshold:
-                    newCameraRotOrientation[1] = -angleThreshold - initCameraRotEuler[1]
-                if totalCameraRotEuler[1] > angleThreshold:
-                    newCameraRotOrientation[1] = angleThreshold - initCameraRotEuler[1]
-                [cameraRotAngle,cameraRotAxis[0],cameraRotAxis[1],_] = self.convertEulerToAxisAngle(newCameraRotOrientation[1],newCameraRotOrientation[2],newCameraRotOrientation[0])'''
-
-            if cameraRotAngle*(180/pi) + self.initCameraRotAngle < -12:
-                print "stuck?"
-                cameraRotAngle = -0.20944 - (self.initCameraRotAngle*pi)/180
-            if cameraRotAngle*(180/pi) + self.initCameraRotAngle > 12:
-                print "stuck?"
-                cameraRotAngle = 0.20944 - (self.initCameraRotAngle*pi)/180
+           
             # update the eye's initial orientation for the next frame
             self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
 
