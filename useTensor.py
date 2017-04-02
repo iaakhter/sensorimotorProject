@@ -10,7 +10,7 @@ from sklearn.neural_network import MLPRegressor
 
 
 class useMlModel:
-	def __init__(self,imagePath ="trainingData/trainingFeature.txt" ,labelPath = "trainingData/trainingLabel.txt"):
+	def __init__(self,imagePath ="trainingData/trainingFeatureXY.txt" ,labelPath = "trainingData/trainingLabelXY.txt"):
 		self.imagePath = imagePath
 		self.labelPath = labelPath
 		self.sigma = 1.0

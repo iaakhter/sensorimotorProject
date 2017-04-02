@@ -36,7 +36,7 @@ class eyeCamera:
         self.mlModel.train()
         # self.tensorModel = useTensor.useMlModel()
         # self.tensorModel.trainTensor()
-        '''tensorModel = train_example.trainCNN()
+        tensorModel = train_example.trainCNN()
         self.traningMean = tensorModel.muYTrain
         self.traningStd = tensorModel.stdYTrain
         #start session
@@ -45,7 +45,7 @@ class eyeCamera:
 
         #Load Model 
         saver = tf.train.Saver()
-        saver.restore(self.sess, "./model.ckpt")'''
+        saver.restore(self.sess, "./model.ckpt")
     
     def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
                     perceivedTargetWidth,perceivedTargetHeight):
@@ -109,9 +109,7 @@ class eyeCamera:
         #print "visualAxis: ", visualAxis
         #print "pointOffocus: ", pointOffocus
         color = (1.0,0.0,0.0)
-        if(pointOffocus[2] < 0.003):
-            pointOffocus[2] = 0.005
-        pointOffocus = [0.0,0.0,0.0]
+        pointOffocus = [0.0,0.0,0.01]
         self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],perceivedTargetWidth,perceivedTargetHeight,color)
         
 
@@ -247,10 +245,12 @@ class eyeCamera:
             self.donePrediction = False
             featureVector = self.determineTargetCameraFocusPosition()
             if len(featureVector) == 0:
+                print "Eye went off screen: Bringing eye and target both to center"
                 self.initCameraRotAxis = array([0.0,0.0,0.0])
                 self.initCameraRotAngle = 0.0
                 self.cameraRotAxis = array([0.0,0.0,0.0])
                 self.cameraRotAngle = 0.0
+                self.targetX, self.targetY, self.targetZ = 0, 0, 0
 
 
         self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
@@ -269,26 +269,22 @@ class eyeCamera:
             self.donePrediction = True
             featureVector = self.determineTargetCameraFocusPosition()
 
-            predictedInnervXY = self.mlModel.predict(featureVector)
+            if len(featureVector) > 0:
+                xTest = np.reshape(featureVector, (1,1,4,1))
+                test_prediction = model_example.y.eval(session=self.sess, feed_dict={model_example.x: xTest, model_example.keep_prob: 1.0})
+                predictedInnervXY = self.mlModel.predict(featureVector)
+                predictedCNN = test_prediction*self.traningStd + self.traningMean
+            else:
+                predictedInnervXY = [0.0,0.0]
+                predictedCNN = [[0.0,0.0]]
 
             # xTest = self.getTestExample() 
             # xTest = np.reshape(featureVector, (1,1,2,1))
-            #xTest = np.reshape(featureVector, (1,1,4,1))
-            #test_prediction = model_example.y.eval(session=self.sess, feed_dict={model_example.x: xTest, model_example.keep_prob: 1.0})
-
-            # print "predicted sklearn ", predictedInnervY
-
-            #predictedCNN = test_prediction*self.traningStd + self.traningMean
 
             print "predicted sklearn: ", predictedInnervXY
-           # print "predicted tensor: ", predictedCNN
+            print "predicted tensor: ", predictedCNN
 
-            # only rotate if the boxes will remain in the window upon rotation
-            #if self.eyeInitOrient[1]*predictedInnervY >= -5000 and self.eyeInitOrient[1]*predictedInnervY <= 5000:
-            # for x movements
             self.innervSignal = array([[predictedInnervXY[0]],[predictedInnervXY[1]],[0]])
-            # self.innervSignal = array([[0.00000001],[predictedYCNN],[0]])
-
             #self.innervSignal = array([[predictedCNN[0,0]],[predictedCNN[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
@@ -298,7 +294,6 @@ class eyeCamera:
             self.eyeInitOrient = self.convertAxisAngleToEuler(cameraRotAxis,cameraRotAngle)
 
             # convert rotation angle from radians to degrees for opengl rotation
-            
             self.cameraRotAngle = cameraRotAngle*(180/pi)
             self.cameraRotAxis = cameraRotAxis
 

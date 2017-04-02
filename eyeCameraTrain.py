@@ -68,9 +68,7 @@ class eyeCameraTrain:
 		#print "visualAxis: ", visualAxis
 		#print "pointOffocus: ", pointOffocus
 		color = (1.0,0.0,0.0)
-		if(pointOffocus[2] < 0.003):
-			pointOffocus[2] = 0.005
-		pointOffocus = [0.0,0.0,0.0]
+		pointOffocus = [0.0,0.0,0.01]
 		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],perceivedTargetWidth,perceivedTargetHeight,color)
 
 
@@ -81,9 +79,7 @@ class eyeCameraTrain:
 		#print "visualAxis: ", visualAxis
 		#print "pointOffocus: ", pointOffocus
 		color = (0.0,0.0,1.0)
-		if(pointOffocus[2] < 0.003):
-			pointOffocus[2] = 0.005
-		pointOffocus = [0.0,0.0,0.0]
+		pointOffocus = [0.0,0.0,0.01]
 		self.drawRectangle(pointOffocus[0],pointOffocus[1],pointOffocus[2],targetWidth,targetHeight,color)
 
 	def drawRectangle(self,x, y, z, width, height,color):
@@ -240,16 +236,16 @@ class eyeCameraTrain:
 
 		if self.setTrainingExample:
 			#set up random innervation signals
-			innervateY = random.random()*120000 - 60000
+			innervateY = random.random()*600000 - 300000
 			# self.innervSignal = array([[0.0],[innervateY],[0]])
-			innervateX = random.random()*120000 - 60000
+			innervateX = random.random()*600000 - 300000
 			self.innervSignal = array([[innervateX],[innervateY],[0]])
 			print "innervateX: ", innervateX
 			print "innervateY: ", innervateY
+
 			#set up random initial eye orientations
-			eyeInitOrientY = random.random()*0.698132 - 0.349066
-			# self.eyeInitOrient = array([[0.0], [eyeInitOrientY], [0.0]])
-			eyeInitOrientX = random.random()*0.698132 - 0.349066
+			eyeInitOrientY = random.random()*0.9 - 0.45
+			eyeInitOrientX = random.random()*0.9 - 0.45
 			self.eyeInitOrient = array([[eyeInitOrientX], [eyeInitOrientY], [0.0]])
 			#print "eyeInitOrientY: ", eyeInitOrientY
 			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])
@@ -272,10 +268,7 @@ class eyeCameraTrain:
 
 			print "self.cameraRotAngle: ", self.cameraRotAngle
 			print "self.cameraRotAxis: ", self.cameraRotAxis
-			#self.setTrainingExample = False
 			self.saveExample = True
-
-
 
 		glutSwapBuffers()
 

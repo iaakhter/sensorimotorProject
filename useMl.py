@@ -26,72 +26,14 @@ class useMlModel:
 		f.close()
 		return numExamples
 
-	'''
-		Code from Professor Mike Gelbart, UBC
-		Get the best sigma using cross validation
-	'''
-	def getBestSigma(self,X,y):
-		print "Finding best sigma "
-		 # get the number of rows(n) and columns(d)
-		(n,d) = X.shape
-
-		# Split training data into a training and a validation set
-		#Xtrain = X[0:n//2]
-		#ytrain = y[0:n//2]
-		#Xvalid = X[n//2: n]
-		#yvalid = y[n//2: n]
-
-		# Find best value of RBF kernel parameter,
-		# training on the train set and validating on the validation set
-		numFolds = 10
-		finalSigma = 0
-		minErr = np.inf
-		for s in range(0,16):
-			print "s ", s
-			sigma = 2 ** s
-			startFold = 0
-			sumErrors = 0
-			for nF in range(numFolds):
-				Xvalid = X[startFold: startFold+n//numFolds]
-				yvalid = y[startFold: startFold+n//numFolds]
-
-				Xtrain = X[0:startFold]
-				ytrain = y[0:startFold]
-				np.append(Xtrain,X[startFold+n//numFolds:n],axis=0)
-				np.append(ytrain,y[startFold+n//numFolds:n],axis=0)
-
-				startFold = startFold+n//numFolds
-			
-
-				# Train on the training set
-				model = linear_model.LeastSquaresRBF(sigma)
-				model.fit(Xtrain,ytrain)
-
-				# Compute the error on the validation set
-				yhat = model.predict(Xvalid)
-				validError = np.sum((yhat - yvalid)**2)/ (n//2)
-				sumErrors += validError
-				print("Error with sigma = {:e} = {}".format( sigma ,validError))
-
-			validError = sumErrors/numFolds
-			# Keep track of the lowest validation error
-			if validError < minErr:
-				minErr = validError
-				bestSigma = sigma
-		return bestSigma
 
 	def train(self):
 		print "Training"
 		#xTrain = processImages.convertImageToArray(self.numberOfExamples, self.imagePath)
 		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, 4,self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, 2,self.labelPath)
-		#bestSigma = self.getBestSigma(xTrain,yTrain)
-		#self.model = linear_model.LeastSquaresRBF(bestSigma)
-		#self.model.fit(xTrain,yTrain)
 		yTrain = np.reshape(yTrain,(xTrain.shape[0],2))
-		#self.model = linear_model.LinearRegression()
-		#self.model.fit(xTrain,yTrain)
-		self.model = MLPRegressor(hidden_layer_sizes=(70,),alpha=1.0)
+		self.model = MLPRegressor(hidden_layer_sizes=(100,),alpha=1.0)
 		self.model.fit(xTrain,yTrain)
 
 

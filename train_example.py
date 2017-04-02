@@ -11,7 +11,7 @@ class trainCNN:
         #Train XY
         imagePath ="trainingData/trainingFeatureXY.txt"
         labelPath = "trainingData/trainingLabelXY.txt"
-        self.numOfExamples = 5000
+        self.numOfExamples = 1000
         numOfFeatures = 4
         numOfLabels = 2
 
@@ -48,7 +48,7 @@ class trainCNN:
 
         # Training loop variables
         epochs = 400
-        batch_size = 100
+        batch_size = 10
         num_samples = self.numOfExamples
         step_size = int(num_samples / batch_size)
 
