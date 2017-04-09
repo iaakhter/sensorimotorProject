@@ -6,6 +6,7 @@ from math import *
 from time import time
 from quaiaoptican import *
 import cv2
+import copy
 
 # References:
 #         https://noobtuts.com/python/opengl-introduction
@@ -28,6 +29,7 @@ class eyeCameraTrain:
 		self.trainingExampleNumber = 0
 		self.f = open("trainingData/trainingLabelXY.txt",'w')
 		self.fFeatures = open("trainingData/trainingFeatureXY.txt",'w')
+		self.countInnervs = 0
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
 					perceivedTargetWidth,perceivedTargetHeight):
@@ -214,7 +216,6 @@ class eyeCameraTrain:
 		if self.saveExample:
 			self.saveExample = False
 			print "SAVING EXAMPLE # ",self.trainingExampleNumber
-			print ""
 			pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_BGR,type=GL_FLOAT)
 			pixels = pixels*255
 
@@ -233,23 +234,30 @@ class eyeCameraTrain:
 				self.trainingExampleNumber = self.trainingExampleNumber+1
 				# self.f.write(str(self.innervSignal[1][0])+"\n")
 				self.f.write(str(self.innervSignal[0][0])+" "+str(self.innervSignal[1][0])+"\n")
+			print ""
 
 		if self.setTrainingExample:
 			#set up random innervation signals
-			innervateY = random.random()*600000 - 300000
+			innervateY = random.random()*200000 - 100000
 			# self.innervSignal = array([[0.0],[innervateY],[0]])
-			innervateX = random.random()*600000 - 300000
+			innervateX = random.random()*200000 - 100000
+			innervateX = random.normal(0,70000)
+			innervateY = random.normal(0,70000)
 			self.innervSignal = array([[innervateX],[innervateY],[0]])
 			print "innervateX: ", innervateX
 			print "innervateY: ", innervateY
 
 			#set up random initial eye orientations
-			eyeInitOrientY = random.random()*0.9 - 0.45
-			eyeInitOrientX = random.random()*0.9 - 0.45
-			self.eyeInitOrient = array([[eyeInitOrientX], [eyeInitOrientY], [0.0]])
-			#print "eyeInitOrientY: ", eyeInitOrientY
+			if self.countInnervs >=10:
+				eyeInitOrientY = random.normal(0,0.2)
+				eyeInitOrientX = random.normal(0,0.2)
+				self.eyeInitOrient = array([[eyeInitOrientX], [eyeInitOrientY], [0.0]])
+				self.countInnervs = 0
+			else:
+				self.countInnervs+=1
+
+			print "eyeInitOrient: ", self.eyeInitOrient
 			[angle,x,y,z] = self.convertEulerToAxisAngle(self.eyeInitOrient[1],self.eyeInitOrient[2],self.eyeInitOrient[0])
-			#print "[angle,x,y,z] ", angle,x,y,z
 
 			self.initCameraRotAngle = angle*(180/pi)
 			self.initCameraRotAxis = array([x,y,z])
@@ -258,8 +266,11 @@ class eyeCameraTrain:
 			print "self.initCameraRotAxis ", self.initCameraRotAxis
 
 			# Get the target rotation axis and angle from the model
-			cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
-			
+			# Need to use a copy of initial eye orientation because we are
+			# changing it in the quaia optical model
+			eyeInitOrientCopy = copy.deepcopy(self.eyeInitOrient)
+			cameraRotAxis, cameraRotAngle = QuaiaOptican(eyeInitOrientCopy, self.innervSignal, 0.001)
+
 			# convert rotation angle from radians to degrees for opengl rotation
 			cameraRotAngle = cameraRotAngle*(180/pi)
 		
