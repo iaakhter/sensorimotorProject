@@ -36,18 +36,6 @@ class eyeCamera:
         self.donePrediction = False
         self.mlModel = useMl.useMlModel()
         self.mlModel.train()
-        # self.tensorModel = useTensor.useMlModel()
-        # self.tensorModel.trainTensor()
-        tensorModel = train_example.trainCNN()
-        self.traningMean = tensorModel.muYTrain
-        self.traningStd = tensorModel.stdYTrain
-        #start session
-        self.sess = tf.InteractiveSession()
-        self.sess.run(tf.global_variables_initializer())
-
-        #Load Model 
-        saver = tf.train.Saver()
-        saver.restore(self.sess, "./model.ckpt")
 
         #Keras net
         self.kerasModel = kerasNet.kerasNet()
@@ -293,7 +281,6 @@ class eyeCamera:
                 xTest = np.reshape(featureVector, (1,1,4,1))
                 test_prediction = model_example.y.eval(session=self.sess, feed_dict={model_example.x: xTest, model_example.keep_prob: 1.0})
                 predictedInnervXY = self.mlModel.predict(featureVector)
-                predictedCNN = test_prediction*self.traningStd + self.traningMean
                 predictedKeras = self.kerasModel.predict(featureVector)
                 #predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
             else:
@@ -302,7 +289,6 @@ class eyeCamera:
                 predictedKeras = array([[0.0, 0.0]])
 
             print "predicted sklearn: ", predictedInnervXY
-            print "predicted tensor: ", predictedCNN
             print "predicted keras: ", predictedKeras
             #print "predicted kerasCNN", predictedKerasCNN
 
@@ -312,7 +298,6 @@ class eyeCamera:
             elif self.selectedKeras:
                 print "Using keras"
                 self.innervSignal = array([[predictedKeras[0,0]],[predictedKeras[0,1]],[0]])
-            # self.innervSignal = array([[predictedCNN[0,0]],[predictedCNN[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
             cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)

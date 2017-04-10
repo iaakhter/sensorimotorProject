@@ -33,7 +33,7 @@ class useMlModel:
 		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, 4,self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, 2,self.labelPath)
 		yTrain = np.reshape(yTrain,(xTrain.shape[0],2))
-		self.model = MLPRegressor(hidden_layer_sizes=(70,),alpha=0.1)
+		self.model = MLPRegressor(hidden_layer_sizes=(32,),alpha=1.0)
 		self.model.fit(xTrain,yTrain)
 
 
