@@ -1,10 +1,9 @@
-#import linear_model
 import processImages
 import numpy as np
 import cv2
-from sklearn import linear_model
 from sklearn.svm import SVR
 from sklearn.neural_network import MLPRegressor
+from sklearn.externals import joblib
 
 
 class useMlModel:
@@ -33,8 +32,9 @@ class useMlModel:
 		xTrain = processImages.constructXFromTargetFocusLocations(self.numberOfExamples, 4,self.imagePath)
 		yTrain = processImages.convertLabelToArray(self.numberOfExamples, 2,self.labelPath)
 		yTrain = np.reshape(yTrain,(xTrain.shape[0],2))
-		self.model = MLPRegressor(hidden_layer_sizes=(32,),alpha=1.0,early_stopping=True)
+		self.model = MLPRegressor(hidden_layer_sizes=(30,),alpha=1.0,early_stopping=True)
 		self.model.fit(xTrain,yTrain)
+		joblib.dump(self.model,'sklearnModel.pkl')
 
 
 	def predict(self,testX):
@@ -65,5 +65,4 @@ class useMlModel:
 if __name__ == "__main__":
 	modelTest = useMlModel()
 	modelTest.train()
-	modelTest.testOnTrainingData()
 

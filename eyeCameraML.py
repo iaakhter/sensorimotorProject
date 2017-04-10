@@ -5,6 +5,7 @@ from numpy import *
 from math import *
 from time import time
 from quaiaoptican import *
+from sklearn.externals import joblib
 
 import tensorflow as tf
 import cv2
@@ -31,8 +32,7 @@ class eyeCamera:
         self.targetChanged = False
         self.predictInnerv = False
         self.donePrediction = False
-        self.mlModel = useMl.useMlModel()
-        self.mlModel.train()
+        self.mlModel = joblib.load('sklearnModel.pkl')
 
         #Keras net
         self.kerasModel = kerasNet.kerasNet()
@@ -276,7 +276,9 @@ class eyeCamera:
 
             if len(featureVector) > 0:
                 xTest = np.reshape(featureVector, (1,1,4,1))
-                predictedInnervXY = self.mlModel.predict(featureVector)
+                testFeature = np.zeros((1,4))
+                testFeature[0,:] = featureVector
+                predictedInnervXY = self.mlModel.predict(testFeature)[0]
                 predictedKeras = self.kerasModel.predict(featureVector)
                 #predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
             else:
