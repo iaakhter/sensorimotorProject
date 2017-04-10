@@ -10,10 +10,8 @@ import numpy as np
 # (X_train, y_train_cat), (X_test, y_test_cat) = mnist.load_data()
 class kerasNet:
     def __init__(self):
-        # self.imagePath ="trainingData/trainingFeatureXY.txt"
-        # self.labelPath = "trainingData/trainingLabelXY.txt"
-        self.imagePath ="trainingData/trainingGaussianFeatureXY.txt"
-        self.labelPath = "trainingData/trainingGaussianLabelXY.txt"
+        self.imagePath ="trainingData/trainingFeatureXY.txt"
+        self.labelPath = "trainingData/trainingLabelXY.txt"
 
         self.numOfExamples = self.getNumberOfTrainingExamples()
 
