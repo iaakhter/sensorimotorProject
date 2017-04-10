@@ -39,8 +39,7 @@ class eyeCamera:
         self.kerasModel = load_model('myKerasNet.h5')
 
         #Keras convNet
-        #self.kerasCNNModel = kerasConvNet.kerasConvNet()
-        # self.kerasCNNModel.train()
+        self.kerasCNNModel = load_model('myKerasConvNet.h5')
 
         self.selectedSklearn = True
         self.selectedKeras = False
@@ -178,8 +177,8 @@ class eyeCamera:
         imageName = "testData/testImage0.png"
         cv2.imwrite(imageName,pixels)
         resized_image = processImages.resizeImages (1, "testData/testImage", "testData/resizedImage")
-        Xtest = processImages.convertImageToArray (1, "testData/resizedImage")
-        Xtest = np.reshape(Xtest, (1, 50, 50, 1))
+        Xtest = processImages.convertImageToArrayColor (1, "testData/resizedImage")
+        Xtest = np.reshape(Xtest, (1, 50, 50, 3))
         return Xtest
 
 
@@ -272,7 +271,7 @@ class eyeCamera:
             self.predictInnerv = False
             self.donePrediction = True
             featureVector = self.determineTargetCameraFocusPosition()
-            #imgTest = self.getTestExample()
+            imgTest = self.getTestExample()
 
             if len(featureVector) > 0:
                 xTest = np.reshape(featureVector, (1,1,4,1))
@@ -280,22 +279,22 @@ class eyeCamera:
                 testFeature[0,:] = featureVector
                 predictedInnervXY = self.mlModel.predict(testFeature)[0]
                 predictedKeras = self.kerasModel.predict(testFeature)
-                #predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
+                predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
             else:
                 predictedInnervXY = [0.0,0.0]
-                predictedCNN = array([[0.0, 0.0]])
+                predictedKerasCNN = array([[0.0, 0.0]])
                 predictedKeras = array([[0.0, 0.0]])
 
             print "predicted sklearn: ", predictedInnervXY
             print "predicted keras: ", predictedKeras
-            #print "predicted kerasCNN", predictedKerasCNN
+            print "predicted kerasCNN", predictedKerasCNN
 
             if self.selectedSklearn:
                 print "Using sklearn"
                 self.innervSignal = array([[predictedInnervXY[0]],[predictedInnervXY[1]],[0]])
             elif self.selectedKeras:
                 print "Using keras"
-                self.innervSignal = array([[predictedKeras[0,0]],[predictedKeras[0,1]],[0]])
+                self.innervSignal = array([[predictedKerasCNN[0,0]],[predictedKerasCNN[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
             cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)

@@ -41,7 +41,7 @@ class kerasConvNet:
 
         history = self.model.fit(xTrain, yTrain,
                             batch_size=128, 
-                            epochs=200,
+                            epochs=100,
                             verbose=1)
 
         score = self.model.evaluate(xTrain, yTrain, verbose=0)
@@ -66,8 +66,8 @@ class kerasConvNet:
 if __name__ == "__main__":
     model = kerasConvNet()
     model.train()
-    Xtest = processImages.convertImageToArrayColor (1, "trainingData/resizedImages/image")
-    Xtest = np.reshape(Xtest, (1, 50, 50, 3))
+    Xtest = processImages.convertImageToArrayColor (2, "trainingData/resizedImages/image")
+    Xtest = np.reshape(Xtest, (2, 50, 50, 3))
     prediction = model.predict(Xtest)
     print "prediction: ", prediction
 
