@@ -1,13 +1,11 @@
-from keras.datasets import mnist
 from keras.utils import np_utils
 from keras.models import Sequential
+from keras.models import load_model
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 import processImages 
 import numpy as np
 
-# the data, shuffled and split between train and test sets
-# (X_train, y_train_cat), (X_test, y_test_cat) = mnist.load_data()
 class kerasNet:
     def __init__(self):
         self.imagePath ="trainingData/trainingFeatureXY.txt"
@@ -43,7 +41,7 @@ class kerasNet:
 
         score = self.model.evaluate(xTrain, yTrain, verbose=0)
         print('Test accuracy:', score[1])
-
+        self.model.save('myKerasNet.h5')
     def predict(self, xTest):
         xTest = np.reshape(xTest, (1,4))
         yhat = self.model.predict(xTest)
@@ -63,5 +61,6 @@ class kerasNet:
 if __name__ == "__main__":
     model = kerasNet()
     model.train()
+
 
 
