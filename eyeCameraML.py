@@ -9,10 +9,7 @@ from quaiaoptican import *
 import tensorflow as tf
 import cv2
 import useMl
-import useTensor
-import model_example
 import processImages
-import train_example
 import kerasNet
 import kerasConvNet
 # References:
@@ -279,7 +276,6 @@ class eyeCamera:
 
             if len(featureVector) > 0:
                 xTest = np.reshape(featureVector, (1,1,4,1))
-                test_prediction = model_example.y.eval(session=self.sess, feed_dict={model_example.x: xTest, model_example.keep_prob: 1.0})
                 predictedInnervXY = self.mlModel.predict(featureVector)
                 predictedKeras = self.kerasModel.predict(featureVector)
                 #predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
