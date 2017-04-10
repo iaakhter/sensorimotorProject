@@ -12,8 +12,8 @@ class kerasNet:
     def __init__(self):
         # self.imagePath ="trainingData/trainingFeatureXY.txt"
         # self.labelPath = "trainingData/trainingLabelXY.txt"
-        # self.imagePath ="trainingData/trainingGaussianFeatureXY.txt"
-        # self.labelPath = "trainingData/trainingGaussianLabelXY.txt"
+        self.imagePath ="trainingData/trainingGaussianFeatureXY.txt"
+        self.labelPath = "trainingData/trainingGaussianLabelXY.txt"
 
         self.numOfExamples = self.getNumberOfTrainingExamples()
 
