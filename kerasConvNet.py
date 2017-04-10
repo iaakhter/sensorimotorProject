@@ -1,6 +1,5 @@
-from keras.datasets import mnist
 from keras.utils import np_utils
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 import processImages 
@@ -13,7 +12,7 @@ class kerasConvNet:
         self.imagePath ="trainingData/resizedImages/image"
         self.labelPath = "trainingData/trainingLabelXY.txt"
 
-        self.numOfExamples = 1026
+        self.numOfExamples = self.getNumberOfTrainingExamples()
         print "number of training examples: ", self.numOfExamples
         self.numOfFeatures = 4
         self.numOfLabels = 2
@@ -42,11 +41,12 @@ class kerasConvNet:
 
         history = self.model.fit(xTrain, yTrain,
                             batch_size=128, 
-                            epochs=2,
+                            epochs=200,
                             verbose=1)
 
         score = self.model.evaluate(xTrain, yTrain, verbose=0)
         print('Test accuracy:', score[1])
+        self.model.save('myKerasConvNet.h5')
 
     def predict(self, xTest):
         yhat = self.model.predict(xTest)

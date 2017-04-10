@@ -99,9 +99,9 @@ def standardizeCols(M, *args):
 if __name__ == "__main__":
    #test run
     #X = convertImageToArray(234, 'trainingData/trainingImages/image')
-    y = convertLabelToArray(1, 4, 'trainingData/trainingLabelXY.txt')
+    # y = convertLabelToArray(1, 4, 'trainingData/trainingLabelXY.txt')
     # X = constructXFromTargetFocusLocations(1,4,"trainingData/trainingFeatureXY.txt")
-    # resizeImages (2135,"trainingData/trainingImages/image", "trainingData/resizedImages/image")
+    resizeImages (2071,"trainingData/trainingImagesXY/image", "trainingData/resizedImages/image")
     # X = convertImageToArrayColor(1, "trainingData/resizedImages/image")
     # stdy, muTrain, sigmaTrain = standardizeCols(y)
     # print stdy, muTrain, sigmaTrain
