@@ -47,7 +47,7 @@ class trainCNN:
         sess.run(tf.global_variables_initializer())
 
         # Training loop variables
-        epochs = 400
+        epochs = 200
         batch_size = 10
         num_samples = self.numOfExamples
         step_size = int(num_samples / batch_size)

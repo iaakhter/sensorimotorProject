@@ -13,8 +13,8 @@ import useTensor
 import model_example
 import processImages
 import train_example
-#import kerasNet
-#import kerasConvNet
+import kerasNet
+import kerasConvNet
 # References:
 #         https://noobtuts.com/python/opengl-introduction
 #         https://learnopengl.com/#!Getting-started/Camera
@@ -50,12 +50,15 @@ class eyeCamera:
         saver.restore(self.sess, "./model.ckpt")
 
         #Keras net
-        #self.kerasModel = kerasNet.kerasNet()
-        #self.kerasModel.train()
+        self.kerasModel = kerasNet.kerasNet()
+        self.kerasModel.train()
 
         #Keras convNet
         #self.kerasCNNModel = kerasConvNet.kerasConvNet()
         # self.kerasCNNModel.train()
+
+        self.selectedSklearn = True
+        self.selectedKeras = False
     
     def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
                     perceivedTargetWidth,perceivedTargetHeight):
@@ -137,6 +140,12 @@ class eyeCamera:
         elif(args[0] == 'a'):
             self.targetChanged = True
             self.targetX -= 0.5
+        elif(args[0] == 'c'):
+            self.selectedSklearn = True
+            self.selectedKeras = False
+        elif(args[0] == 'k'):
+            self.selectedSklearn = False
+            self.selectedKeras = True
 
     def OnMouseClick(self, button, state, x, y):
         if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
@@ -285,21 +294,25 @@ class eyeCamera:
                 test_prediction = model_example.y.eval(session=self.sess, feed_dict={model_example.x: xTest, model_example.keep_prob: 1.0})
                 predictedInnervXY = self.mlModel.predict(featureVector)
                 predictedCNN = test_prediction*self.traningStd + self.traningMean
-                # predictedKeras = self.kerasModel.predict(featureVector)
-                # predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
+                predictedKeras = self.kerasModel.predict(featureVector)
+                #predictedKerasCNN = self.kerasCNNModel.predict(imgTest)
             else:
                 predictedInnervXY = [0.0,0.0]
                 predictedCNN = array([[0.0, 0.0]])
-                #predictedKeras = array([[0.0, 0.0]])
+                predictedKeras = array([[0.0, 0.0]])
 
             print "predicted sklearn: ", predictedInnervXY
             print "predicted tensor: ", predictedCNN
-            #print "predicted keras: ", predictedKeras
-            # print "predicted kerasCNN", predictedKerasCNN
+            print "predicted keras: ", predictedKeras
+            #print "predicted kerasCNN", predictedKerasCNN
 
-            self.innervSignal = array([[predictedInnervXY[0]],[predictedInnervXY[1]],[0]])
+            if self.selectedSklearn:
+                print "Using sklearn"
+                self.innervSignal = array([[predictedInnervXY[0]],[predictedInnervXY[1]],[0]])
+            elif self.selectedKeras:
+                print "Using keras"
+                self.innervSignal = array([[predictedKeras[0,0]],[predictedKeras[0,1]],[0]])
             # self.innervSignal = array([[predictedCNN[0,0]],[predictedCNN[0,1]],[0]])
-            #self.innervSignal = array([[predictedKeras[0,0]],[predictedKeras[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
             cameraRotAxis, cameraRotAngle = QuaiaOptican(self.eyeInitOrient, self.innervSignal, 0.001)
@@ -318,7 +331,6 @@ class eyeCamera:
         if self.targetChanged:
             self.predictInnerv = True
             self.targetChanged = False
-
 
         glutSwapBuffers()
 
