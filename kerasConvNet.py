@@ -41,7 +41,7 @@ class kerasConvNet:
 
         history = self.model.fit(xTrain, yTrain,
                             batch_size=128, 
-                            epochs=100,
+                            epochs=500,
                             verbose=1,
                             validation_split=0.5)
 
