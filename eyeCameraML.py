@@ -43,6 +43,7 @@ class eyeCamera:
 
         self.selectedSklearn = True
         self.selectedKeras = False
+        self.selectedConv2D = False
     
     def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
                     perceivedTargetWidth,perceivedTargetHeight):
@@ -127,9 +128,15 @@ class eyeCamera:
         elif(args[0] == 'c'):
             self.selectedSklearn = True
             self.selectedKeras = False
+            self.selectedConv2D = False
         elif(args[0] == 'k'):
             self.selectedSklearn = False
             self.selectedKeras = True
+            self.selectedConv2D = False
+        elif(args[0] == 'n'):
+            self.selectedSklearn = False
+            self.selectedKeras = False
+            self.selectedConv2D = True
 
     def OnMouseClick(self, button, state, x, y):
         if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
@@ -294,6 +301,9 @@ class eyeCamera:
                 self.innervSignal = array([[predictedInnervXY[0]],[predictedInnervXY[1]],[0]])
             elif self.selectedKeras:
                 print "Using keras"
+                self.innervSignal = array([[predictedKeras[0,0]],[predictedKeras[0,1]],[0]])
+            elif self.selectedConv2D:
+                print "Using Keras Conv2D NNet"
                 self.innervSignal = array([[predictedKerasCNN[0,0]],[predictedKerasCNN[0,1]],[0]])
             
             # Get the target rotation axis and angle from the model
