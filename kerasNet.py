@@ -24,24 +24,25 @@ class kerasNet:
 
 
         self.model = Sequential()
-        self.model.add(Dense(200, input_shape=(4,), activation='relu', use_bias=True))
+        self.model.add(Dense(100, input_shape=(4,), activation='relu', use_bias=True))
         # self.model.add(Dropout(0.8))
-        # self.model.add(Dense(100, activation='relu'))
+        self.model.add(Dense(100, activation='relu'))
         # self.model.add(Dropout(0.8))
         # self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(2))
 
-        self.model.compile(loss='mean_squared_error', optimizer='adagrad', metrics=['mse'])
+        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mse'])
 
         history = self.model.fit(xTrain, yTrain,
                             batch_size=128, 
                             epochs=500,
                             verbose=0,
-                            validation_split=0.8)
+                            validation_split=0.5)
 
         score = self.model.evaluate(xTrain, yTrain, verbose=0)
         print('Test accuracy:', score[1])
         self.model.save('myKerasNet.h5')
+        
     def predict(self, xTest):
         xTest = np.reshape(xTest, (1,4))
         yhat = self.model.predict(xTest)
