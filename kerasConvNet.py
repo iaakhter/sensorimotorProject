@@ -28,10 +28,10 @@ class kerasConvNet:
 
 
         self.model = Sequential()
-        self.model.add(Convolution2D(100, (5, 5), input_shape=(50,50,3), activation='relu', use_bias=True))
+        self.model.add(Convolution2D(100, (3, 3), input_shape=(50,50,3), activation='relu', use_bias=True))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Convolution2D(100, (3, 3), activation='relu'))
-        self.model.add(Dropout(0.5))
+        #self.model.add(Convolution2D(100, (3, 3), activation='relu'))
+        #self.model.add(Dropout(0.5))
         self.model.add(Flatten())
         self.model.add(Dense(32,activation='relu'))
         self.model.add(Dense(2))
@@ -40,10 +40,10 @@ class kerasConvNet:
 
 
         history = self.model.fit(xTrain, yTrain,
-                            batch_size=128, 
-                            epochs=500,
+                            batch_size=64, 
+                            epochs=200,
                             verbose=1,
-                            validation_split=0.5)
+                            validation_split=0.1)
 
         score = self.model.evaluate(xTrain, yTrain, verbose=0)
         print('Test accuracy:', score[1])
@@ -67,8 +67,8 @@ class kerasConvNet:
 if __name__ == "__main__":
     model = kerasConvNet()
     model.train()
-    Xtest = processImages.convertImageToArrayColor (5, "trainingData/resizedImages/image")
-    Xtest = np.reshape(Xtest, (5, 50, 50, 3))
+    Xtest = processImages.convertImageToArrayColor (15, "testData/resizedImages/image")
+    Xtest = np.reshape(Xtest, (15, 50, 50, 3))
     prediction = model.predict(Xtest)
     print "prediction: ", prediction
 
