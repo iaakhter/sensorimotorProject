@@ -29,6 +29,10 @@ class eyeCameraTrain:
 		self.trainingExampleNumber = 0
 		self.f = open("trainingData/trainingLabelXY.txt",'w')
 		self.fFeatures = open("trainingData/trainingFeatureXY.txt",'w')
+
+		#Uncomment to create testing images/features
+		# self.f = open("testData/testingLabelXY.txt",'w')
+		# self.fFeatures = open("testData/testingFeatureXY.txt",'w')
 		self.countInnervs = 0
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
@@ -118,7 +122,11 @@ class eyeCameraTrain:
 		pixels = glReadPixels(0.0,0.0,self.width,self.height,format=GL_RGB,type=GL_FLOAT)
 		#print "pixels"
 		indicesB = where(pixels[:,:,2]==1.0)
-
+		print "num of blue pixels: ", len(indicesB[0])
+		if len(indicesB[0]) < 1900:
+			print"target out of screen -- ignoring example"
+			return []
+			 
 		if len(indicesB[0]) > 0:
 			startBluey = min(indicesB[0])
 			endBluey = max(indicesB[0])
@@ -220,13 +228,15 @@ class eyeCameraTrain:
 			pixels = pixels*255
 
 			imageName = "trainingData/trainingImagesXY/image"
+			# imageName = "testData/testImages/image"
 			imageName = imageName + str(self.trainingExampleNumber)
 			imageName = imageName + ".png"
-			cv2.imwrite(imageName,pixels)
+			
 
 			featureVector = self.determineTargetCameraFocusPosition()
 
 			if len(featureVector) > 0:
+				cv2.imwrite(imageName,pixels)
 				print "featureVector ", featureVector
 				for loc in featureVector:
 					self.fFeatures.write(str(loc) + " ")
@@ -252,9 +262,9 @@ class eyeCameraTrain:
 			print "self.initCameraRotAxis ", self.initCameraRotAxis
 
 			#Sample innervation signal using normal distribution with mean at the selected initial orientation
-			innervateY = random.normal(0,80000)
+			innervateY = random.normal(0,70000)
 			# self.innervSignal = array([[0.0],[innervateY],[0]])
-			innervateX = random.normal(0,80000)
+			innervateX = random.normal(0,70000)
 			self.innervSignal = array([[innervateX],[innervateY],[0]])
 			print "innervateX: ", innervateX
 			print "innervateY: ", innervateY
