@@ -33,6 +33,8 @@ class eyeCamera:
         self.targetChanged = False
         self.predictInnerv = False
         self.donePrediction = False
+        self.recordError = True
+        self.wait = 0.0
         self.mlModel = joblib.load('sklearnModel.pkl')
 
         #Keras net
@@ -44,6 +46,9 @@ class eyeCamera:
         self.selectedSklearn = True
         self.selectedKeras = False
         self.selectedConv2D = False
+        self.f = open("testData/testErrorPeriphery.txt",'w')
+        self.testExample = 0
+
     
     def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,
                     perceivedTargetWidth,perceivedTargetHeight):
@@ -253,7 +258,8 @@ class eyeCamera:
 
         if self.donePrediction:
             self.donePrediction = False
-            featureVector = self.determineTargetCameraFocusPosition()
+            self.wait = 0.0
+            featureVector = self.determineTargetCameraFocusPosition() 
             if len(featureVector) == 0:
                 print "Eye went off screen: Bringing eye and target both to center"
                 self.targetX, self.targetY, self.targetZ = 0, 0, 0
@@ -266,10 +272,12 @@ class eyeCamera:
                 self.targetChanged = False
                 self.predictInnerv = False
                 self.donePrediction = False
-
+                
 
         self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
                         perceivedTargetWidth,perceivedTargetHeight)
+
+
 
         #update the initial camera rotation and angle to be the current ones
         self.initCameraRotAxis = self.cameraRotAxis
@@ -278,7 +286,16 @@ class eyeCamera:
         targetWidth = 0.25
         targetHeight = 0.25
         self.drawTarget(self.targetX,self.targetY,self.targetZ,targetWidth,targetHeight)
-        
+
+        self.wait += 1.0
+        if self.wait == 5.0 and self.recordError:
+            self.testExample += 1
+            print "test example: ", self.testExample 
+            featVector = self.determineTargetCameraFocusPosition()
+            testError = np.sqrt((featVector[0] - featVector[2])**2 + (featVector[1] - featVector[3])**2) 
+            print "Error distance: ", testError , "pixels"            
+            self.f.write(str(testError) + "\n")
+
         if self.predictInnerv:
             self.predictInnerv = False
             self.donePrediction = True
@@ -321,6 +338,7 @@ class eyeCamera:
             self.cameraRotAngle = cameraRotAngle*(180/pi)
             self.cameraRotAxis = cameraRotAxis
 
+
     # When the target has changed position, we need to rotate our eye accordingly
         if self.targetChanged:
             self.predictInnerv = True
@@ -342,6 +360,7 @@ class eyeCamera:
         glutKeyboardFunc(self.keyPressed)
         glutMouseFunc(self.OnMouseClick)
         glutMainLoop()                                         # start everything
+        self.f.close()
 
 eyeCam = eyeCamera()
 eyeCam.main()
