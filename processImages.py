@@ -96,15 +96,35 @@ def standardizeCols(M, *args):
         stdM = (M - mu) / std_dev
 
         return stdM, mu, std_dev
+
+def getErrorStatistics (numberOfExamples, filePath):
+    ### Get distances from file ####
+    errorFile = open(filePath, 'r')
+    y = np.zeros((numberOfExamples))
+    
+    for i in range(numberOfExamples):
+        currentValue = errorFile.readline()
+        y[i] = float(currentValue)
+  
+    errorFile.close()
+
+    ### Compute mean and std ###
+    errorMean = np.mean(y)
+    errorStd = np.std(y)
+    return errorMean, errorStd
+
 if __name__ == "__main__":
    #test run
     #X = convertImageToArray(234, 'trainingData/trainingImages/image')
     # y = convertLabelToArray(1, 4, 'trainingData/trainingLabelXY.txt')
     # X = constructXFromTargetFocusLocations(1,4,"trainingData/trainingFeatureXY.txt")
     # resizeImages (2105,"trainingData/trainingImagesXY/image", "trainingData/resizedImages/image")
-    resizeImages (329,"testData/testImages/image", "testData/resizedImages/image")
+    # resizeImages (329,"testData/testImages/image", "testData/resizedImages/image")
     # X = convertImageToArrayColor(1, "trainingData/resizedImages/image")
     # stdy, muTrain, sigmaTrain = standardizeCols(y)
     # print stdy, muTrain, sigmaTrain
     # print X.shape
     # print np.max(X)
+    [mean, stdDev] = getErrorStatistics(200, "testData/testErrorPeriphery.txt")
+    print "MeanError: ", mean, "px"
+    print "StdDev: ",  stdDev, "px" 
