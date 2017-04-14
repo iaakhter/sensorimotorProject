@@ -28,7 +28,7 @@ class kerasConvNet:
 
 
         self.model = Sequential()
-        self.model.add(Convolution2D(100, (3, 3), input_shape=(50,50,3), activation='relu', use_bias=True))
+        self.model.add(Convolution2D(32, (3, 3), input_shape=(50,50,3), activation='relu', use_bias=True))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         #self.model.add(Convolution2D(100, (3, 3), activation='relu'))
         #self.model.add(Dropout(0.5))
