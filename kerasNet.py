@@ -24,9 +24,9 @@ class kerasNet:
 
 
         self.model = Sequential()
-        self.model.add(Dense(100, input_shape=(4,), activation='relu', use_bias=True))
+        self.model.add(Dense(10, input_shape=(4,), activation='relu', use_bias=True))
         # self.model.add(Dropout(0.8))
-        self.model.add(Dense(100, activation='relu'))
+        # self.model.add(Dense(5, activation='relu'))
         # self.model.add(Dropout(0.8))
         # self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(2))
@@ -35,9 +35,9 @@ class kerasNet:
 
         history = self.model.fit(xTrain, yTrain,
                             batch_size=128, 
-                            epochs=500,
+                            epochs=1000,
                             verbose=0,
-                            validation_split=0.5)
+                            validation_split=0.8)
 
         score = self.model.evaluate(xTrain, yTrain, verbose=0)
         print('Test accuracy:', score[1])
@@ -62,6 +62,13 @@ class kerasNet:
 if __name__ == "__main__":
     model = kerasNet()
     model.train()
+    Xtest = processImages.constructXFromTargetFocusLocations(10, 4, "testData/testingFeatureXY.txt")
+    ytest = processImages.convertLabelToArray(10, 2, "testData/testingLabelXY.txt")
 
+    # Xtest = np.reshape(Xtest, (10,4))
+    for i in range(len(Xtest)):
+        prediction = model.predict(Xtest[i,:])
+        print "prediction: ", prediction
+        print "true value: ", ytest[i,:]
 
 
