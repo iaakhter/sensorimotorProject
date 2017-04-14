@@ -30,9 +30,6 @@ class eyeCameraTrain:
 		self.f = open("trainingData/trainingLabelXY.txt",'w')
 		self.fFeatures = open("trainingData/trainingFeatureXY.txt",'w')
 
-		#Uncomment to create testing images/features
-		# self.f = open("testData/testingLabelXY.txt",'w')
-		# self.fFeatures = open("testData/testingFeatureXY.txt",'w')
 		self.countInnervs = 0
 	
 	def setUpCamera(self,cameraPosition,cameraTarget,cameraUp,

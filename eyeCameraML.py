@@ -256,11 +256,16 @@ class eyeCamera:
             featureVector = self.determineTargetCameraFocusPosition()
             if len(featureVector) == 0:
                 print "Eye went off screen: Bringing eye and target both to center"
+                self.targetX, self.targetY, self.targetZ = 0, 0, 0
+                self.eyeInitOrient = array([[0], [0], [0]])
+                self.innervSignal = array([[0.00000001],[0],[0]])
                 self.initCameraRotAxis = array([0.0,0.0,0.0])
                 self.initCameraRotAngle = 0.0
                 self.cameraRotAxis = array([0.0,0.0,0.0])
                 self.cameraRotAngle = 0.0
-                self.targetX, self.targetY, self.targetZ = 0, 0, 0
+                self.targetChanged = False
+                self.predictInnerv = False
+                self.donePrediction = False
 
 
         self.setUpCamera(cameraPosition,cameraTarget,cameraUp,
@@ -315,9 +320,6 @@ class eyeCamera:
             # convert rotation angle from radians to degrees for opengl rotation
             self.cameraRotAngle = cameraRotAngle*(180/pi)
             self.cameraRotAxis = cameraRotAxis
-
-            # we are done dealing with the target 
-            self.targetChanged = False
 
     # When the target has changed position, we need to rotate our eye accordingly
         if self.targetChanged:
